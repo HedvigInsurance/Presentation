@@ -99,13 +99,11 @@ public extension UIViewController {
             nc.setNavigationBarHidden(true, animated: options.animated)
         }
         
-        if let navigationBar = viewController.navigationController?.navigationBar {
-            if #available(iOS 11.0, *) {
-                if options.contains(.preferLargeTitles) {
-                    navigationBar.prefersLargeTitles = true
-                } else if options.contains(.refuseLargeTitles) {
-                    navigationBar.prefersLargeTitles = false
-                }
+        if #available(iOS 11.0, *) {
+            if options.contains(.preferLargeTitles) {
+                nc.navigationBar.prefersLargeTitles = true
+            } else if options.contains(.refuseLargeTitles) {
+                nc.navigationBar.prefersLargeTitles = false
             }
         }
         
