@@ -29,7 +29,7 @@ public extension UIViewController {
             }
         }
         
-        setLargeTitleDisplayMode(options)
+        vc.setLargeTitleDisplayMode(options)
 
         return Future { futureCompletion in
             let bag = DisposeBag()
