@@ -28,6 +28,16 @@ public extension UIViewController {
                 self.present(vc, style: style, options: options, function: function)
             }
         }
+        
+        if #available(iOS 11.0, *) {
+            if options.contains(.largeTitleDisplayModeNever) {
+                viewController.navigationItem.largeTitleDisplayMode = .never
+            } else if options.contains(.largeTitleDisplayModeAlways) {
+                viewController.navigationItem.largeTitleDisplayMode = .always
+            } else if options.contains(.largeTitleDisplayModeAutomatic) {
+                viewController.navigationItem.largeTitleDisplayMode = .automatic
+            }
+        }
 
         return Future { futureCompletion in
             let bag = DisposeBag()

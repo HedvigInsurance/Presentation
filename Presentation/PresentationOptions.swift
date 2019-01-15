@@ -54,6 +54,23 @@ public extension PresentationOptions {
     static func prefersLargeTitles(_ prefers: Bool) -> PresentationOptions {
         return prefers ? preferLargeTitles : refuseLargeTitles
     }
+    
+    enum LargeTitleDisplayMode {
+        case always, never, automatic
+    }
+
+    static func largeTitleDisplayMode(
+        _ displayMode: LargeTitleDisplayMode
+    ) -> PresentationOptions {
+        switch displayMode {
+        case .always:
+            return largeTitleDisplayModeAlways
+        case .never:
+            return largeTitleDisplayModeNever
+        case .automatic:
+            return largeTitleDisplayModeAutomatic
+        }
+    }
 }
 
 public extension PresentationOptions {
@@ -133,6 +150,15 @@ internal extension PresentationOptions {
     
     /// will set prefersLargeTitles to false
     static let refuseLargeTitles = PresentationOptions()
+
+    /// will set large title display mode to .never
+    static let largeTitleDisplayModeNever = PresentationOptions()
+
+    /// will set large title display mode to .automatic
+    static let largeTitleDisplayModeAutomatic = PresentationOptions()
+
+    /// will set large title display mode to .always
+    static let largeTitleDisplayModeAlways = PresentationOptions()
 
     /// returns navigationBar visibility preference if specified in options set otherwise returns nil
     func navigationBarHidden() -> Bool? {
