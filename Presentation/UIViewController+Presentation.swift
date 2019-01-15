@@ -29,15 +29,7 @@ public extension UIViewController {
             }
         }
         
-        if #available(iOS 11.0, *) {
-            if options.contains(.largeTitleDisplayModeNever) {
-                viewController.navigationItem.largeTitleDisplayMode = .never
-            } else if options.contains(.largeTitleDisplayModeAlways) {
-                viewController.navigationItem.largeTitleDisplayMode = .always
-            } else if options.contains(.largeTitleDisplayModeAutomatic) {
-                viewController.navigationItem.largeTitleDisplayMode = .automatic
-            }
-        }
+        setLargeTitleDisplayMode(options)
 
         return Future { futureCompletion in
             let bag = DisposeBag()
@@ -107,6 +99,19 @@ public extension UIViewController {
             }
 
             return bag
+        }
+    }
+    
+    // set's navigationItem.largeTitleDisplayMode according to presentation options
+    static func setLargeTitleDisplayMode(_ options: PresentationOptions) {
+        if #available(iOS 11.0, *) {
+            if options.contains(.largeTitleDisplayModeNever) {
+                navigationItem.largeTitleDisplayMode = .never
+            } else if options.contains(.largeTitleDisplayModeAlways) {
+                navigationItem.largeTitleDisplayMode = .always
+            } else if options.contains(.largeTitleDisplayModeAutomatic) {
+                navigationItem.largeTitleDisplayMode = .automatic
+            }
         }
     }
 
