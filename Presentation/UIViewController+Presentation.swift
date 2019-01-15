@@ -9,8 +9,8 @@
 import UIKit
 import Flow
 
-/// Callback which is called whenever a presentation was presented
-public var presentationWasPresented: (_ viewController: UIViewController) -> Void = { _ in }
+/// Callback which is called whenever a viewController was presented
+public var viewControllerWasPresented: (_ viewController: UIViewController) -> Void = { _ in }
 
 public extension UIViewController {
     /// Presents `viewController` on `self` and returns a future with the result of `function`'s returned future.
@@ -85,7 +85,7 @@ public extension UIViewController {
             let (result, dismisser) = style.present(vc, from: self, options: options)
             dismiss = dismisser
             
-            presentationWasPresented(vc)
+            viewControllerWasPresented(vc)
 
             bag += result.onError { error in
                 if case PresentError.presentationNotPossible = error {
