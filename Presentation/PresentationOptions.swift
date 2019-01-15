@@ -50,6 +50,10 @@ public extension PresentationOptions {
     static func prefersNavigationBarHidden(_ hidden: Bool) -> PresentationOptions {
         return hidden ? navigationBarHidden : navigationBarShown
     }
+    
+    static func prefersLargeTitles(_ prefers: Bool) -> PresentationOptions {
+        return prefers ? preferLargeTitles : refuseLargeTitles
+    }
 }
 
 public extension PresentationOptions {
@@ -94,6 +98,17 @@ public extension UIViewController {
         } else if options.contains(.navigationBarHidden) {
             nc.setNavigationBarHidden(true, animated: options.animated)
         }
+        
+        if let navigationBar = viewController.navigationController?.navigationBar {
+            if #available(iOS 11.0, *) {
+                if options.contains(.preferLargeTitles) {
+                    navigationBar.prefersLargeTitles = true
+                } else if options.contains(.refuseLargeTitles) {
+                    navigationBar.prefersLargeTitles = false
+                }
+            }
+        }
+        
         return nc
     }
 
@@ -114,6 +129,12 @@ internal extension PresentationOptions {
 
     /// Will show the navigation bar
     static let navigationBarShown = PresentationOptions()
+    
+    /// will set prefersLargeTitles to true
+    static let preferLargeTitles = PresentationOptions()
+    
+    /// will set prefersLargeTitles to false
+    static let refuseLargeTitles = PresentationOptions()
 
     /// returns navigationBar visibility preference if specified in options set otherwise returns nil
     func navigationBarHidden() -> Bool? {
