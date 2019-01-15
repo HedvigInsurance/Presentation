@@ -103,7 +103,7 @@ public extension UIViewController {
     }
     
     // set's navigationItem.largeTitleDisplayMode according to presentation options
-    static func setLargeTitleDisplayMode(_ options: PresentationOptions) {
+    func setLargeTitleDisplayMode(_ options: PresentationOptions) {
         if #available(iOS 11.0, *) {
             if options.contains(.largeTitleDisplayModeNever) {
                 navigationItem.largeTitleDisplayMode = .never
