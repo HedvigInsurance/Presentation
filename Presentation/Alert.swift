@@ -200,6 +200,10 @@ private extension UIAlertAction {
     }
 }
 
+
+/// Callback which is called whenever an Alert.Action is pressed
+public var alertActionWasPressed: (_ alertController: UIAlertController, _ title: String) -> Void = { _, _ in }
+
 private extension UIAlertController {
     func addActionWithTitle(_ title: String, style: UIAlertActionStyle = .default) -> Signal<()> {
         let callbacker = Callbacker<()>()
@@ -214,6 +218,9 @@ private extension UIAlertController {
             action.isEnabled = true
             bag += {
                 action.isEnabled = !callbacker.isEmpty
+            }
+            bag += Signal(callbacker: callbacker).onValue { _ in
+                alertActionWasPressed(self, title)
             }
             return bag
         }
