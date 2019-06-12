@@ -307,13 +307,6 @@ public extension UIViewController {
     }
 }
 
-public extension AnyPresentable where Matter == UIViewController {
-    /// Creates a type erased insance of presentable where the matter is a `UIViewControler`.
-    init<P: Presentable>(_ presentable: P) where P.Matter: UIViewController, P.Result == Result {
-        self.init(materialize: presentable.materialize)
-    }
-}
-
 public extension UIWindow {
     /// Presents `presentable` on `self` and set `self`'s `rootViewController` to the presented view controller and make `self` key and visible.
     /// - Parameter options: Only `.embedInNavigationController` is supported, defaults to `[]`
