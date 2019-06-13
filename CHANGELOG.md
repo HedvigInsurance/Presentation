@@ -1,3 +1,13 @@
+# 1.6.0
+- [Bug fix] Add DEBUG compiler flag in Debug mode to enable the debug-only functionality
+- [Addition] Expose raw presentation events in addition to logs
+
+# 1.5.0
+Swift 5 update
+
+# 1.4.1
+- Add `willShowViewControllerSignal` to `UINavigationController` that reflects UINavigationControllerDelegate's `navigationController(_:willShow:animated:)` delegate method.
+
 # 1.4.0
 - Add support for Signals in Presentation onValue
 - Fix MaterDetailSelection retain cycle
