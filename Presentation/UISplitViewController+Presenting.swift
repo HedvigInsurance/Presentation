@@ -33,6 +33,15 @@ extension UISplitViewController: PresentingViewController {
             } else {
                 nc = customNavigationController([])
             }
+            
+            if #available(iOS 11.0, *) {
+                if options.contains(.preferLargeTitles) {
+                    nc.navigationBar.prefersLargeTitles = true
+                } else if options.contains(.refuseLargeTitles) {
+                    nc.navigationBar.prefersLargeTitles = false
+                }
+            }
+            
             presenter = nc
             viewControllers = [ viewControllers[0], nc ]
             //        case (true, false, _, nil, false):
@@ -46,6 +55,15 @@ extension UISplitViewController: PresentingViewController {
             } else {
                 nc = customNavigationController(.showInMaster)
             }
+            
+            if #available(iOS 11.0, *) {
+                if options.contains(.preferLargeTitles) {
+                    nc.navigationBar.prefersLargeTitles = true
+                } else if options.contains(.refuseLargeTitles) {
+                    nc.navigationBar.prefersLargeTitles = false
+                }
+            }
+            
             presenter = nc
             viewControllers = [ nc ] + viewControllers.dropFirst()
         default:
