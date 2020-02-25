@@ -13,6 +13,7 @@ extension UISplitViewController: PresentingViewController {
     public func present(_ vc: UIViewController, options: PresentationOptions) -> PresentingViewController.Result {
         let presenter: PresentingViewController
         vc.setAssociatedValue(options.contains(.showInMaster), forKey: &isPresentedInMasterKey)
+        vc.setLargeTitleDisplayMode(options)
 
         switch (options.contains(.showInMaster), isCollapsed, viewControllers.first as? PresentingViewController, viewControllers.dropFirst().first as? PresentingViewController, options.contains(.embedInNavigationController)) {
 
