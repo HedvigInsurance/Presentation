@@ -84,66 +84,63 @@ public extension PresentationStyle {
         return PresentationStyle(name: "modally") { viewController, from, options in
             let vc = viewController.embededInNavigationController(options)
 
-            if let presentationStyle = presentationStyle {
-                vc.modalPresentationStyle = presentationStyle
-            }
-
-            if let transitionStyle = transitionStyle {
-                vc.modalTransitionStyle = transitionStyle
-            }
-
-            if let capturesStatusBarAppearance = capturesStatusBarAppearance {
-                vc.modalPresentationCapturesStatusBarAppearance = capturesStatusBarAppearance
-            }
+            vc.modalPresentationStyle = presentationStyle ?? viewController.modalPresentationStyle
+            vc.modalTransitionStyle = transitionStyle ?? viewController.modalTransitionStyle
+            vc.modalPresentationCapturesStatusBarAppearance = capturesStatusBarAppearance ?? viewController.modalPresentationCapturesStatusBarAppearance
 
             return from.modallyPresentQueued(vc, options: options) {
-                Future { completion in
-                    let bag = DisposeBag()
+                modalPresentationDismissalSetup(for: vc, options: options)
+            }
+        }
+    }
 
-                    // The presentationController of an alert controller should not have its delegate modified
-                    if !(vc is UIAlertController) {
-                        /**
-                         Using a custom property instead of `viewController.presentationController?.delegate` because
-                         of a memory leak in UIKit when accessing the presentation controller of a view controller
-                         that's not going to be presented: https://github.com/iZettle/Presentation/pull/43#discussion_r307223478
-                         */
-                        let delegate = viewController.customAdaptivePresentationDelegate ?? CustomAdaptivePresentationDelegate()
-                        bag.hold(delegate)
-                        vc.presentationController?.delegate = delegate
+    /// Creates a future that will setup all dismiss functionality needed for modal presentations.
+    /// - Parameters:
+    ///   - viewController: The presented view controller.
+    ///   - customPresentationController: Optional custom presentation controller that will be used for the presentation. Defaults to `nil`.
+    ///   - options: Presentation options.
+    static func modalPresentationDismissalSetup(for viewController: UIViewController, customPresentationController: UIPresentationController? = nil, options: PresentationOptions) -> Future<Void> {
+        return Future { completion in
+            let bag = DisposeBag()
+            let presented = (viewController as? UINavigationController)?.viewControllers.first ?? viewController
 
-                        bag += delegate.shouldDismiss.set { presentationController -> Bool in
-                            guard !options.contains(.allowSwipeDismissAlways),
-                            let nc = (presentationController.presentedViewController as? UINavigationController) else {
-                                return true
-                            }
-                            return nc.viewControllers.count <= 1
-                        }
+            if !(presented is UIAlertController) {
+                let delegate = presented.customAdaptivePresentationDelegate ?? CustomAdaptivePresentationDelegate()
+                bag.hold(delegate)
+                (customPresentationController ?? viewController.presentationController)?.delegate = delegate
 
-                        bag += delegate.didDismissSignal.onValue { _ in
-                            completion(.failure(PresentError.dismissed))
-                        }
+                if !delegate.shouldDismiss.isSet {
+                    bag += delegate.shouldDismiss.set { presentationController -> Bool in
+                        guard !options.contains(.allowSwipeDismissAlways) else { return true }
+                        return (presentationController.presentedViewController as? SwipeDismissConfigurable)?.isAllowingSwipeDismissal ?? true
                     }
+                }
 
-                    bag += viewController.installDismissButton().onValue {
-                        completion(.failure(PresentError.dismissed))
-                    }
-
-                    if vc.modalPresentationStyle == .popover, let popover = vc.popoverPresentationController {
-                        let delegate = PopoverPresentationControllerDelegate {
-                            guard !bag.isEmpty else { return }
-                            completion(.failure(PresentError.dismissed))
-                        }
-                        popover.delegate = delegate
-                        // auto dismissing if the source view is removed from the window
-                        bag += popover.sourceView?.hasWindowSignal.filter { $0 == false }.toVoid().onValue {
-                            completion(.failure(PresentError.dismissed))
-                        }
-                        bag.hold(delegate)
-                    }
-
-                    return bag
+                bag += delegate.didDismissSignal.onValue { _ in
+                    completion(.failure(PresentError.dismissed))
                 }
             }
+
+            bag += presented.installDismissButton().onValue {
+                completion(.failure(PresentError.dismissed))
+            }
+
+            if viewController.modalPresentationStyle == .popover, let popover = viewController.popoverPresentationController {
+                let delegate = PopoverPresentationControllerDelegate {
+                    guard !bag.isEmpty else { return }
+                    completion(.failure(PresentError.dismissed))
+                }
+
+                popover.delegate = delegate
+
+                bag += popover.sourceView?.hasWindowSignal.filter { $0 == false }.toVoid().onValue {
+                    completion(.failure(PresentError.dismissed))
+                }
+
+                bag.hold(delegate)
+            }
+
+            return bag
         }
     }
 
@@ -188,9 +185,19 @@ public extension PresentationStyle {
     }
 
     /// Present by embedding the view controller in `view`.
-    /// - Parameter dynamicPreferredContentSize: Whether or not the child view controller should automatically update the parents preferredCOntentSize.
-    static func embed(in view: UIView?, dynamicPreferredContentSize: Bool = true) -> PresentationStyle {
-        return PresentationStyle(name: "embed") { vc, from, _ in
+    /// - Parameter dynamicPreferredContentSize: Whether the child view controller should automatically update the parents preferredCOntentSize.
+    /// - Parameter respectPresentationOptions: Whether the mebed of the child view controller will respect the custom presentation options passed during presentation. Defaults to `false` because in most cases embedded view controllers are used in the middle of other views and are not expected to visually look like view controllers, for example to show a navigation bar.
+    ///
+    /// - Note: This presentation style respects the `embedInNavigationController` option.
+    static func embed(in view: UIView?, dynamicPreferredContentSize: Bool = true, respectPresentationOptions: Bool = false) -> PresentationStyle {
+        return PresentationStyle(name: "embed") { viewController, from, options in
+            let vc: UIViewController
+            if respectPresentationOptions && options.contains(.embedInNavigationController) {
+                vc = viewController.embededInNavigationController(options)
+            } else {
+                vc = viewController
+            }
+
             let result = Future<()> { _ in
                 let bag = DisposeBag()
 

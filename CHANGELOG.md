@@ -1,6 +1,37 @@
-# 1.7.1
+# 1.13.0
+- [Change] Move to Flow version 1.8.4
+- [Bugfix] Fix compile time error in `public extension SignalProvider where Value: Collection {` for swift 5.2
+- [Change] Remove `noTrailingClosure: () = ()` from `init<Result>` for  `Presentation` to avoid `Ambiguous use of 'init' for Signals` compile time errors on call site
+
+# 1.12.0
+- [Addition] Make swipe-to-dismiss blockable through protocol conformance.
+
+# 1.11.0
+- [Addition] Extracted the modal dismiss setup to a separate function, to be able to supply a custom presentation controller if needed.
+
+# 1.10.0
+- [Addition] Make it possible to embed a Presentable wrapped in a navigation controller within another view. 
+
+# 1.9.2
+- [Bug fix] View controller's modal presentation preferences not used when it's embedded in a navigation controller during presentation.
+
+# 1.9.1
+- [Bug fix] Dissmissal happends on worker threads if the result future is mutated by the .succeed() or .fail() methods
+
+# 1.9.0
+- [Addition] Add a new `isCollapsedState` signal to DualNavigationControllersSplitDelegate that has a `nil` value until the collapsed state is known. Old `isCollapsedSignal` is deprecated.
+- [Addition] Add a new `init(collapsedState:)` method to DualNavigationControllersSplitDelegate that takes a future to get notified of a known collapsed state. The `init` without parameters is deprecated.
+- [Change] Deprecate MasterDetailSelection's init with `isCollapsed` signal in favour of init that can handle a `nil` collapsed state
+- [Bug fix] DualNavigationControllersSplitDelegate's `isCollapsedSignal` didn't signal `false` when moving from collapsed state to not collapsed (multitasking/rotation)
+- [Bug fix] DualNavigationControllersSplitDelegate's `isCollapsedSignal` didn't signal anything on iOS 13 ([issue #54](https://github.com/iZettle/Presentation/issues/54))
+
+# 1.8.1
+- [Bug fix] Revert a change of the default SplitVC delegate `isCollapsed` value that doesn't work as expected because it's used before the vc is added to the screen and the value is not reliable
+
+# 1.8.0
 - [Bug fix] Fixed a recursive delegate call issue in modal presentstions.
 - [Bug fix] Added a workaround for a navigation bar layout issue in iOS 13.
+- [Addition] Added support for Swift Package Manager.
 
 # 1.7.0
 - [Big fix] Fix presentation lifecycle management on iOS 13 when swiping down a modal sheet
