@@ -11,10 +11,11 @@ let package = Package(
     products: [
         .library(
             name: "Presentation",
+            type: .dynamic,
             targets: ["Presentation"]),
     ],
     dependencies: [
-        .package(url: "https://github.com/hedviginsurance/flow", .branch("master")),
+        .package(url: "https://github.com/hedviginsurance/Flow", .upToNextMajor(from: "1.8.6")),
     ],
     targets: [
         .target(
