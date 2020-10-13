@@ -41,9 +41,9 @@ public extension UINavigationItem {
 private var callbackerKey = false
 
 extension UINavigationController {
-    public static var InitPresentationNavigationControllerDelegate:
-        (UINavigationControllerDelegate?, UINavigationController) ->
-        PresentationNavigationControllerDelegate = { (delegate, navigationController) in
+    public typealias PresentationDelegateConstructor = (UINavigationControllerDelegate?, UINavigationController) -> PresentationNavigationControllerDelegate
+    
+    public static var InitPresentationNavigationControllerDelegate: PresentationDelegateConstructor = { (delegate, navigationController) in
         NavigationControllerDelegate(delegate: delegate, navigationController: navigationController)
     }
 }
