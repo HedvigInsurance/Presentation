@@ -40,15 +40,23 @@ public extension UINavigationItem {
 
 private var callbackerKey = false
 
+extension UINavigationController {
+    public static var InitPresentationNavigationControllerDelegate:
+        (UINavigationControllerDelegate?, UINavigationController) ->
+        PresentationNavigationControllerDelegate = { (delegate, navigationController) in
+        NavigationControllerDelegate(delegate: delegate, navigationController: navigationController)
+    }
+}
+
 private extension UINavigationController {
-    func delegateSignal<Value>(for signal: @escaping (NavigationControllerDelegate) -> Signal<Value>) -> Signal<Value> {
+    func delegateSignal<Value>(for signal: @escaping (PresentationNavigationControllerDelegate) -> Signal<Value>) -> Signal<Value> {
         return Signal { callback in
             let bag = DisposeBag()
-            let delegate: NavigationControllerDelegate
-            if let navigationDelegate = self.delegate as? NavigationControllerDelegate {
+            let delegate: PresentationNavigationControllerDelegate
+            if let navigationDelegate = self.delegate as? PresentationNavigationControllerDelegate {
                 delegate = navigationDelegate
             } else {
-                delegate = NavigationControllerDelegate(delegate: self.delegate, navigationController: self)
+                delegate = Self.InitPresentationNavigationControllerDelegate(self.delegate, self)
                 self.delegate = delegate
             }
             bag.hold(delegate)
@@ -64,7 +72,14 @@ extension UINavigationItem {
     }
 }
 
-private class NavigationControllerDelegate: NSObject, UINavigationControllerDelegate {
+public protocol PresentationNavigationControllerDelegate: UINavigationControllerDelegate {
+    var popSignal: Signal<UIViewController> { get }
+    var viewControllersSignal: Signal<[UIViewController]> { get }
+    var willPopSignal: Signal<UIViewController> { get }
+    var willShowSignal: Signal<(viewController: UIViewController, animated: Bool)> { get }
+}
+
+private class NavigationControllerDelegate: NSObject, UINavigationControllerDelegate, PresentationNavigationControllerDelegate {
     weak var delegate: UINavigationControllerDelegate?
     weak var navigationController: UINavigationController?
 
@@ -93,6 +108,22 @@ private class NavigationControllerDelegate: NSObject, UINavigationControllerDele
     fileprivate var willShowCallbacker = Callbacker<(viewController: UIViewController, animated: Bool)>()
     var willShowSignal: Signal<(viewController: UIViewController, animated: Bool)> {
         return Signal(callbacker: willShowCallbacker)
+    }
+
+    func navigationController(
+        _ navigationController: UINavigationController,
+        animationControllerFor operation: UINavigationController.Operation,
+        from fromVC: UIViewController,
+        to toVC: UIViewController
+    ) -> UIViewControllerAnimatedTransitioning? {
+        delegate?.navigationController?(navigationController, animationControllerFor: operation, from: fromVC, to: toVC)
+    }
+    
+    func navigationController(
+        _ navigationController: UINavigationController,
+        interactionControllerFor animationController: UIViewControllerAnimatedTransitioning
+    ) -> UIViewControllerInteractiveTransitioning? {
+        delegate?.navigationController?(navigationController, interactionControllerFor: animationController)
     }
 
     fileprivate func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
