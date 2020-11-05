@@ -48,17 +48,30 @@ extension UINavigationController {
     }
 }
 
+private var navigationControllerDelegateKey = false
+
 private extension UINavigationController {
+    private var presentationNavigationControllerDelegate: PresentationNavigationControllerDelegate? {
+            get { return associatedValue(forKey: &navigationControllerDelegateKey) }
+            set { setAssociatedValue(newValue, forKey: &navigationControllerDelegateKey) }
+    }
+
     func delegateSignal<Value>(for signal: @escaping (PresentationNavigationControllerDelegate) -> Signal<Value>) -> Signal<Value> {
         return Signal { callback in
             let bag = DisposeBag()
             let delegate: PresentationNavigationControllerDelegate
-            if let navigationDelegate = self.delegate as? PresentationNavigationControllerDelegate {
+
+            if let navigationDelegate = self.presentationNavigationControllerDelegate {
+                delegate = navigationDelegate
+            } else if let navigationDelegate = self.delegate as? PresentationNavigationControllerDelegate {
                 delegate = navigationDelegate
             } else {
                 delegate = Self.InitPresentationNavigationControllerDelegate(self.delegate, self)
                 self.delegate = delegate
             }
+
+            self.presentationNavigationControllerDelegate = delegate
+
             bag.hold(delegate)
             bag += signal(delegate).onValue(callback)
             return bag
