@@ -48,34 +48,39 @@ extension UINavigationController {
     }
 }
 
-private var navigationControllerDelegateKey = false
+var presentationNavigationControllerDelegateKey = false
 
 private extension UINavigationController {
-    private var presentationNavigationControllerDelegate: PresentationNavigationControllerDelegate? {
-            get { return associatedValue(forKey: &navigationControllerDelegateKey) }
-            set { setAssociatedValue(newValue, forKey: &navigationControllerDelegateKey) }
+    var presentationNavigationControllerDelegate: PresentationNavigationControllerDelegate? {
+        get { return associatedValue(forKey: &presentationNavigationControllerDelegateKey) }
+        set { setAssociatedValue(newValue, forKey: &presentationNavigationControllerDelegateKey) }
     }
 
     func delegateSignal<Value>(for signal: @escaping (PresentationNavigationControllerDelegate) -> Signal<Value>) -> Signal<Value> {
-        return Signal { callback in
+        Signal { callback in
             let bag = DisposeBag()
-            let delegate: PresentationNavigationControllerDelegate
 
-            if let navigationDelegate = self.presentationNavigationControllerDelegate {
-                delegate = navigationDelegate
-            } else if let navigationDelegate = self.delegate as? PresentationNavigationControllerDelegate {
-                delegate = navigationDelegate
-            } else {
-                delegate = Self.InitPresentationNavigationControllerDelegate(self.delegate, self)
-                self.delegate = delegate
+            if let delegate = self.presentationNavigationControllerDelegate {
+                bag += signal(delegate).onValue(callback)
             }
 
-            self.presentationNavigationControllerDelegate = delegate
-
-            bag.hold(delegate)
-            bag += signal(delegate).onValue(callback)
             return bag
         }
+    }
+}
+
+extension UINavigationController {
+    func setupDelegate() {
+        let delegate: PresentationNavigationControllerDelegate
+
+        if let navigationDelegate = self.delegate as? PresentationNavigationControllerDelegate {
+            delegate = navigationDelegate
+        } else {
+            delegate = Self.InitPresentationNavigationControllerDelegate(self.delegate, self)
+            self.delegate = delegate
+        }
+
+        self.presentationNavigationControllerDelegate = delegate
     }
 }
 

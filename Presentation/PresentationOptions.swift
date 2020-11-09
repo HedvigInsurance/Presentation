@@ -111,6 +111,7 @@ public extension UIViewController {
         // Add protocol
         guard options.contains(.embedInNavigationController) && !(self is UINavigationController) && !(self is UISplitViewController) && !(self is UIAlertController) else { return self }
         let nc = customNavigationController(options)
+        nc.setupDelegate()
         nc.transferDebugPresentationInfo(from: self)
         nc.viewControllers = [ self ]
         if options.contains(.navigationBarShown) {
