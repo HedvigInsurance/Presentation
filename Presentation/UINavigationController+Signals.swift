@@ -63,7 +63,7 @@ private extension UINavigationController {
             if let delegate = self.presentationNavigationControllerDelegate {
                 bag += signal(delegate).onValue(callback)
             }
-            
+
             /// reset interactivePopGestureRecognizer's delegate so swiping back always works
             self.interactivePopGestureRecognizer?.delegate = nil
 
