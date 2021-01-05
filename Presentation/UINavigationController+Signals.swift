@@ -79,7 +79,11 @@ extension UINavigationController {
         if let navigationDelegate = self.delegate as? PresentationNavigationControllerDelegate {
             delegate = navigationDelegate
         } else {
-            delegate = Self.InitPresentationNavigationControllerDelegate(self.delegate, self)
+            if #available(iOS 14.0, *) {
+                delegate = Self.InitPresentationNavigationControllerDelegate(ProcessInfo.processInfo.isiOSAppOnMac ? nil : self.delegate, self)
+            } else {
+                delegate = Self.InitPresentationNavigationControllerDelegate(self.delegate, self)
+            }
             self.delegate = delegate
         }
 
