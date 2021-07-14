@@ -213,7 +213,7 @@ func unsafeCastToUIViewController(_ any: Any?) -> UIViewController {
         return vc
     }
     
-    fatalError()
+    fatalError("Matter of JourneyPresentation must always inherit from UIViewController")
 }
 
 extension UIViewController {
