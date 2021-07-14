@@ -14,6 +14,9 @@ enum TestContinueResult {
     case oneOption
     case anotherOption
     case thirdOption
+    case fourthOption
+    case fifthOption
+    case sixthOption
 }
 
 struct TestContinue: Presentable {
@@ -39,9 +42,11 @@ struct TestContinue: Presentable {
 }
 
 struct Embark: Presentable {
-    func materialize() -> (UIViewController, FiniteSignal<String>) {
+    func materialize() -> (UIViewController, FiniteSignal<Int>) {
         let viewController = UIViewController()
         viewController.title = "Test Continue"
+        
+        var numberOfTaps = 0
 
         let button = UIButton(type: .infoDark)
         viewController.view = button
@@ -51,7 +56,30 @@ struct Embark: Presentable {
         return (viewController, FiniteSignal { callback in
             
             bag += button.onValue({ _ in
-                callback(.value("test"))
+                numberOfTaps = numberOfTaps + 1
+                
+                callback(.value(numberOfTaps))
+            })
+            
+            return bag
+        })
+    }
+}
+
+struct EndOfJourney: Presentable {
+    func materialize() -> (UIViewController, Future<Void>) {
+        let viewController = UIViewController()
+        viewController.title = "end this is"
+
+        let button = UIButton(type: .detailDisclosure)
+        viewController.view = button
+        
+        let bag = DisposeBag()
+        
+        return (viewController, Future { completion in
+            
+            bag += button.onValue({ _ in
+                completion(.success)
             })
             
             return bag
@@ -64,8 +92,12 @@ struct Messages {
         Presentation(TestContinue(), style: .modal, options: [.defaults, .autoPop]).journey { value in
             switch value {
             case .oneOption:
-                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
-                    DismissJourney()
+                Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
+                    if numberOfTaps == 3 {
+                        Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
+                            PopJourney()
+                        }
+                    }
                 }
             case .anotherOption:
                 Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
@@ -74,6 +106,18 @@ struct Messages {
             case .thirdOption:
                 Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
                     PopJourney()
+                }
+            case .fourthOption:
+                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
+                    DismissJourney()
+                }
+            case .fifthOption:
+                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
+                    DismissJourney()
+                }
+            case .sixthOption:
+                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
+                    DismissJourney()
                 }
             }
         }
@@ -140,7 +184,9 @@ extension Messages: Presentable {
         }
 
         bag += composeButton.onValue {
-            bag += viewController.present(flow)
+            bag += viewController.present(flow).onValue({ _ in
+                
+            })
         }
 
         return (split, bag)

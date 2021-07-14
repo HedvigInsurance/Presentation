@@ -33,8 +33,39 @@ public struct ConditionalJourneyPresentable<TrueP: Presentable, FalseP: Presenta
     }
 }
 
-public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: JourneyPresentation>: JourneyPresentation
+protocol ConditionalFindNestedPresentable {
+    var findNestedPresentable: AnyPresentable<UIViewController, Any> { get }
+}
+
+public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: JourneyPresentation>: JourneyPresentation, ConditionalFindNestedPresentable
 {
+    func tupleUnnest(_ tuple: Any) -> Any {
+        if let (a, b) = tuple as? (Any?, Any?) {
+            if let a = a {
+                return tupleUnnest(a)
+            } else if let b = b {
+                return tupleUnnest(b)
+            }
+         }
+        
+        return tuple
+    }
+    
+    var findNestedPresentable: AnyPresentable<UIViewController, Any> {
+        switch storage {
+        case let .first(presentation):
+            return AnyPresentable {
+                let (matter, result) = presentation.presentable.materialize()
+                return (tupleUnnest(matter) as! UIViewController, tupleUnnest(result))
+            }
+        case let .second(presentation):
+            return AnyPresentable {
+                let (matter, result) = presentation.presentable.materialize()
+                return (tupleUnnest(matter) as! UIViewController, tupleUnnest(result))
+            }
+        }
+    }
+    
     public var style: PresentationStyle {
         switch storage {
         case let .first(presentation):
@@ -95,10 +126,6 @@ public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP:
   init(second : FalseP) { storage = .second(second) }
 }
 
-public struct OptionalJourney<RealJourney: JourneyPresentation> {
-    let journey: RealJourney?
-}
-
 @resultBuilder public struct JourneyBuilder {
     public static func buildEither<TrueP: JourneyPresentation, FalseP: JourneyPresentation>(first p: TrueP) -> ConditionalJourneyPresentation<TrueP, FalseP> {
         return ConditionalJourneyPresentation(first: p)
@@ -116,26 +143,34 @@ public struct OptionalJourney<RealJourney: JourneyPresentation> {
         return p
     }
     
-    public static func buildBlock<P: JourneyPresentation>(_ optionalJourney: OptionalJourney<P>) -> OptionalJourney<P> {
-        return optionalJourney
-    }
-    
-    public static func buildOptional<P: JourneyPresentation>(_ p: P?) -> OptionalJourney<P> {
-        OptionalJourney(journey: p)
+    public static func buildOptional<JP: JourneyPresentation>(_ journeyPresentation: JP?) -> ConditionalJourneyPresentation<JP, ContinueJourney> {
+        if let journeyPresentation = journeyPresentation {
+            return ConditionalJourneyPresentation(first: journeyPresentation)
+        }
+        
+        return ConditionalJourneyPresentation(second: ContinueJourney())
     }
 }
 
-extension FiniteSignal: JourneyResult {
+extension FiniteSignal: JourneyResult, AnyJourneyResult {
+    public var continueOrEndAnySignal: FiniteSignal<Any> {
+        continueOrEndSignal.map { $0 as Any }
+    }
+    
     public var continueOrEndSignal: FiniteSignal<Value> {
         FiniteSignal { callback in
-            return self.onValue { value in
-                callback(.value(value))
+            return (self as! CoreSignal<Finite, Value>).onEvent { event in
+                callback(event)
             }
         }
     }
 }
 
-extension Future: JourneyResult {
+extension Future: JourneyResult, AnyJourneyResult {
+    public var continueOrEndAnySignal: FiniteSignal<Any> {
+        continueOrEndSignal.map { $0 as Any }
+    }
+    
     public var continueOrEndSignal: FiniteSignal<Value> {
         FiniteSignal { callback in
             self.onValue { value in
@@ -149,57 +184,63 @@ extension Future: JourneyResult {
     }
 }
 
-public protocol JourneyResult: class {
+public protocol JourneyResult: AnyObject {
     associatedtype Value
     var continueOrEndSignal: FiniteSignal<Value> { get }
 }
 
+public protocol AnyJourneyResult: AnyObject {
+    var continueOrEndAnySignal: FiniteSignal<Any> { get }
+}
+
 extension UIViewController {
-    public func present<J: JourneyPresentation>(_ presentation: J) -> J.P.Result where J.P.Matter: UIViewController {
+    public func present<J: JourneyPresentation>(_ presentation: J) -> FiniteSignal<Void> where J.P.Matter: UIViewController, J.P.Result: JourneyResult {
         let (vc, result) = presentation.presentable.materialize()
-
-        present(vc, style: presentation.style, options: presentation.options) { vc, bag -> () in
-            presentation.configure(vc, bag)
-        }.onResult { presentation.onDismiss($0.error) }
-         .onCancel { presentation.onDismiss(PresentError.dismissed) }
-
-        return result
-    }
-
-    public func present<J: JourneyPresentation>(_ presentation: J) -> Future<Void> where J.P.Matter: UIViewController, J.P.Result: JourneyResult {
-        let (vc, result) = presentation.presentable.materialize()
+        
+        if vc as? DismisserPresentable.DismisserViewController != nil {
+            return Future<Void>(error: PresentError.dismissed).continueOrEndSignal
+        } else if vc as? PoperPresentable.PoperViewController != nil {
+            return Future<Void>(immediate: { () }).continueOrEndSignal
+        } else if vc as? ContinuerPresentable.ContinuerViewController != nil {
+            return Future<Void>().continueOrEndSignal
+        }
 
         let presenter = present(vc, style: presentation.style, options: presentation.options) { vc, bag -> () in
             presentation.configure(vc, bag)
         }.onResult { presentation.onDismiss($0.error) }
         .onCancel { presentation.onDismiss(PresentError.dismissed) }
 
-        return result.continueOrEndSignal.future.onError({ _ in
+        return result.continueOrEndSignal.atError({ _ in
             presenter.cancel()
-        }).onValue({ _ in
+        }).atEnd {
             presenter.cancel()
-        }).toVoid()
+        }.toVoid()
     }
     
-    public func present<TrueP: JourneyPresentation, FalseP: JourneyPresentation>(
-        _ presentation: ConditionalJourneyPresentation<TrueP, FalseP>
-    ) -> Either<AnyJourneyPresentation<TrueP.P.Matter, TrueP.P.Result>, AnyJourneyPresentation<FalseP.P.Matter, FalseP.P.Result>> where TrueP.P.Matter: UIViewController, TrueP.P.Result: JourneyResult, FalseP.P.Matter: UIViewController, FalseP.P.Result: JourneyResult {
-        switch presentation.storage {
-        case let .first(presentation):
-            return .left(
-                AnyJourneyPresentation(presentable: AnyPresentable(materialize: {
-                    let ((matter, result), _) = presentation.presentable.materialize()
-                    
-                    return (matter, result)
-                }), style: presentation.style, options: presentation.options, configure: presentation.configure, onDismiss: presentation.onDismiss)
-            )
-        case let .second(presentation):
-            return .right(
-                AnyJourneyPresentation(presentable: AnyPresentable(materialize: {
-                    let (_, (matter, result)) = presentation.presentable.materialize()
-                    return (matter, result)
-                }), style: presentation.style, options: presentation.options, configure: presentation.configure, onDismiss: presentation.onDismiss)
-            )
+    public func present<TrueJourney: JourneyPresentation, FalseJourney: JourneyPresentation>(_ presentation: ConditionalJourneyPresentation<TrueJourney, FalseJourney>) -> AnyJourneyResult {
+        let (vc, result) = presentation.findNestedPresentable.materialize()
+        
+        if vc as? DismisserPresentable.DismisserViewController != nil {
+            return Future<Void>(error: PresentError.dismissed)
+        } else if vc as? PoperPresentable.PoperViewController != nil {
+            return Future<Void>(immediate: { () })
+        } else if vc as? ContinuerPresentable.ContinuerViewController != nil {
+            return Future<Void> { _ in
+                return NilDisposer()
+            }
+        }
+        
+        let presenter = present(vc, style: presentation.style, options: presentation.options) { vc, bag -> () in
+            // cant configure
+        }.onResult { presentation.onDismiss($0.error) }
+        .onCancel { presentation.onDismiss(PresentError.dismissed) }
+        
+        let anyJourneyResult = result as! AnyJourneyResult
+
+        return anyJourneyResult.continueOrEndAnySignal.atError({ _ in
+            presenter.cancel()
+        }).atEnd {
+            presenter.cancel()
         }
     }
 }
@@ -224,8 +265,10 @@ public protocol JourneyPresentation {
 }
 
 public struct DismisserPresentable: Presentable {
-    public func materialize() -> (UIViewController, Future<Void>) {
-        fatalError("Does nothing")
+    public class DismisserViewController: UIViewController {}
+    
+    public func materialize() -> (DismisserViewController, Future<Void>) {
+        return (DismisserViewController(), Future<Void>())
     }
 }
 
@@ -242,7 +285,7 @@ public struct DismissJourney: JourneyPresentation {
         []
     }
 
-    public var configure: (UIViewController, DisposeBag) -> () = { _, _  in }
+    public var configure: (DismisserPresentable.DismisserViewController, DisposeBag) -> () = { _, _  in }
 
     public var onDismiss: (Error?) -> () = { _ in }
 
@@ -250,8 +293,10 @@ public struct DismissJourney: JourneyPresentation {
 }
 
 public struct PoperPresentable: Presentable {
-    public func materialize() -> (UIViewController, Future<Void>) {
-        fatalError("Does nothing")
+    public class PoperViewController: UIViewController {}
+    
+    public func materialize() -> (PoperViewController, Future<Void>) {
+        return (PoperViewController(), Future<Void>())
     }
 }
 
@@ -268,7 +313,35 @@ public struct PopJourney: JourneyPresentation {
         []
     }
 
-    public var configure: (UIViewController, DisposeBag) -> () = { _, _  in }
+    public var configure: (PoperPresentable.PoperViewController, DisposeBag) -> () = { _, _  in }
+
+    public var onDismiss: (Error?) -> () = { _ in }
+
+    public init() {}
+}
+
+public struct ContinuerPresentable: Presentable {
+    public class ContinuerViewController: UIViewController {}
+    
+    public func materialize() -> (ContinuerViewController, Future<Void>) {
+        return (ContinuerViewController(), Future<Void>())
+    }
+}
+
+public struct ContinueJourney: JourneyPresentation {
+    public var presentable: ContinuerPresentable {
+        ContinuerPresentable()
+    }
+
+    public var style: PresentationStyle {
+        .default
+    }
+
+    public var options: PresentationOptions {
+        []
+    }
+
+    public var configure: (ContinuerPresentable.ContinuerViewController, DisposeBag) -> () = { _, _  in }
 
     public var onDismiss: (Error?) -> () = { _ in }
 
@@ -290,78 +363,23 @@ extension Presentation {
         @JourneyBuilder _ content: @escaping (_ value: P.Result.Value) -> ConditionalJourneyPresentation<TrueJourney, FalseJourney>
     ) -> some ViewControllerJourneyPresentation
     where P.Matter: UIViewController, P.Result == JR {
-        AnyJourneyPresentation<UIViewController, Future<Void>>(
+        AnyJourneyPresentation<UIViewController, FiniteSignal<Void>>(
             presentable: AnyPresentable {
                 let (matter, result) = self.presentable.materialize()
-
-                return (matter, Future { completion in
+                
+                return (matter, FiniteSignal { callback in
                     let bag = DisposeBag()
-
-                    bag += result.continueOrEndSignal.onValue({ value in
-                        
-                        matter.present(content(value))
-                        
-//                        switch content(value).content {
-//                        case let .first(presentation):
-//                            if presentation.presentable as? DismisserPresentable != nil {
-//                                completion(.failure(PresentError.dismissed))
-//                            } else if presentation.presentable as? PoperPresentable != nil {
-//                                completion(.success)
-//                            }  else {
-//                                matter.present(presentation).onError { error in
-//                                    completion(.failure(error))
-//                                }
-//                            }
-//
-//                        case let .second(presentation):
-//                            if presentation.presentable as? DismisserPresentable != nil {
-//                                completion(.failure(PresentError.dismissed))
-//                            } else if presentation.presentable as? PoperPresentable != nil {
-//                                completion(.success)
-//                            } else {
-//                                matter.present(presentation).onError { error in
-//                                    completion(.failure(error))
-//                                }
-//                            }
-//                        }
-                    })
                     
-                    return bag
-                })
-            },
-            style: style,
-            options: options,
-            configure: { _, _ in },
-            onDismiss: onDismiss
-        )
-    }
-    
-    public func journey<RealJourney: JourneyPresentation, JR: JourneyResult>(
-        @JourneyBuilder _ content: @escaping (_ value: P.Result.Value) -> OptionalJourney<RealJourney>
-    ) -> some JourneyPresentation
-    where P.Matter: UIViewController, P.Result == JR {
-        AnyJourneyPresentation<UIViewController, Future<Void>>(
-            presentable: AnyPresentable {
-                let (matter, result) = self.presentable.materialize()
-
-                return (matter, Future { completion in
-                    let bag = DisposeBag()
-
-                    bag += result.continueOrEndSignal.onValue({ value in
-                        guard let presentation = content(value).journey else {
-                            return
+                    bag += result.continueOrEndSignal.atValue { value in
+                        bag += matter.present(content(value)).continueOrEndAnySignal.atValue { value in
+                            print(value)
+                            callback(.value(()))
+                        }.onError { error in
+                            callback(.end(error))
                         }
-                        
-                        if presentation.presentable as? DismisserPresentable != nil {
-                            completion(.failure(PresentError.dismissed))
-                        } else if presentation.presentable as? PoperPresentable != nil {
-                            completion(.success)
-                        } else {
-//                            matter.present(presentation).onError { error in
-//                                completion(.failure(error))
-//                            }
-                        }
-                    })
+                    }.onEnd {
+                        callback(.end)
+                    }
                     
                     return bag
                 })
@@ -377,26 +395,25 @@ extension Presentation {
         @JourneyBuilder _ content: @escaping (_ value: P.Result.Value) -> InnerJourney
     ) -> some ViewControllerJourneyPresentation
     where P.Matter: UIViewController, P.Result == JR, InnerJourney.P.Matter: UIViewController, InnerJourney.P.Result == InnerJourneyResult {
-        AnyJourneyPresentation<UIViewController, Future<Void>>(
+        AnyJourneyPresentation<UIViewController, FiniteSignal<Void>>(
             presentable: AnyPresentable {
                 let (matter, result) = self.presentable.materialize()
 
-                return (matter, Future { completion in
+                return (matter, FiniteSignal { callback in
                     let bag = DisposeBag()
+                    
 
-                    bag += result.continueOrEndSignal.onValue({ value in
+                    bag += result.continueOrEndSignal.atValue { value in
                         let presentation = content(value)
                         
-                        if presentation.presentable as? DismisserPresentable != nil {
-                            completion(.failure(PresentError.dismissed))
-                        } else if presentation.presentable as? PoperPresentable != nil {
-                            completion(.success)
-                        } else {
-                            matter.present(presentation).onError { error in
-                                completion(.failure(error))
-                            }
+                        bag += matter.present(presentation).continueOrEndAnySignal.atValue { _ in
+                            callback(.value(()))
+                        }.onError { error in
+                            callback(.end(error))
                         }
-                    })
+                    }.onEnd {
+                        callback(.end)
+                    }
                     
                     return bag
                 })
