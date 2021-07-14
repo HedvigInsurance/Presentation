@@ -392,6 +392,7 @@ extension Presentation {
                 
                 return (matter, FiniteSignal { callback in
                     let bag = DisposeBag()
+                    self.configure(matter, bag)
                     
                     bag += transformedResult.continueOrEndSignal.onValueDisposePrevious { value in
                         matter.present(content(value)).continueOrEndAnySignal.onError { error in
@@ -422,9 +423,10 @@ extension Presentation {
             presentable: AnyPresentable {
                 let (matter, result) = self.presentable.materialize()
                 let transformedResult = transform(result)
-
+                
                 return (matter, FiniteSignal { callback in
                     let bag = DisposeBag()
+                    self.configure(matter, bag)
                     
                     bag += transformedResult.continueOrEndSignal.onValueDisposePrevious { value in
                         matter.present(content(value)).continueOrEndAnySignal.onError { error in
