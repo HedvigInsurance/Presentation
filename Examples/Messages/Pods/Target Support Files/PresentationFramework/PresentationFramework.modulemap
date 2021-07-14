@@ -1,0 +1,6 @@
+framework module Presentation {
+  umbrella header "PresentationFramework-umbrella.h"
+
+  export *
+  module * { export * }
+}

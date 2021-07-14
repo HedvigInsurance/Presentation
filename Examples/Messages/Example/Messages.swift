@@ -10,7 +10,75 @@ import UIKit
 import Flow
 import Presentation
 
+enum TestContinueResult {
+    case oneOption
+    case anotherOption
+    case thirdOption
+}
+
+struct TestContinue: Presentable {
+    func materialize() -> (UIViewController, FiniteSignal<TestContinueResult>) {
+        let viewController = UIViewController()
+        viewController.title = "Test Continue"
+        
+        let view = UIView()
+        view.backgroundColor = .white
+        viewController.view = view
+        
+        let bag = DisposeBag()
+        
+        return (viewController, FiniteSignal { callback in
+                        
+            bag += Signal(after: 2).onValue {
+                callback(.value(.oneOption))
+            }
+            
+            return bag
+        })
+    }
+}
+
+struct Embark: Presentable {
+    func materialize() -> (UIViewController, FiniteSignal<String>) {
+        let viewController = UIViewController()
+        viewController.title = "Test Continue"
+
+        let button = UIButton(type: .infoDark)
+        viewController.view = button
+        
+        let bag = DisposeBag()
+        
+        return (viewController, FiniteSignal { callback in
+            
+            bag += button.onValue({ _ in
+                callback(.value("test"))
+            })
+            
+            return bag
+        })
+    }
+}
+
 struct Messages {
+    var flow: some ViewControllerJourneyPresentation {
+        Presentation(TestContinue(), style: .modal, options: [.defaults, .autoPop]).journey { value in
+            switch value {
+            case .oneOption:
+                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
+                    DismissJourney()
+                }
+            case .anotherOption:
+                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
+                    PopJourney()
+                }
+            case .thirdOption:
+                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
+                    PopJourney()
+                }
+            }
+        }
+    }
+    
     let messages: ReadSignal<[Message]>
     let composeMessage: Presentation<ComposeMessage>
     let messageDetails: (Message) -> Presentation<MessageDetails>
@@ -72,7 +140,7 @@ extension Messages: Presentable {
         }
 
         bag += composeButton.onValue {
-            viewController.present(self.composeMessage)
+            bag += viewController.present(flow)
         }
 
         return (split, bag)
