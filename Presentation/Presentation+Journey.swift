@@ -371,7 +371,7 @@ extension Presentation {
                     let bag = DisposeBag()
                     
                     bag += result.continueOrEndSignal.onValueDisposePrevious { value in
-                        matter.present(content(value)).continueOrEndAnySignal.atError { error in
+                        matter.present(content(value)).continueOrEndAnySignal.onError { error in
                             if (error as? PresentError) == PresentError.poped {
                                 callback(.end)
                             } else {
@@ -402,7 +402,7 @@ extension Presentation {
                     let bag = DisposeBag()
                     
                     bag += result.continueOrEndSignal.onValueDisposePrevious { value in
-                        matter.present(content(value)).continueOrEndAnySignal.atError { error in
+                        matter.present(content(value)).continueOrEndAnySignal.onError { error in
                             if (error as? PresentError) == PresentError.poped {
                                 callback(.end)
                             } else {
