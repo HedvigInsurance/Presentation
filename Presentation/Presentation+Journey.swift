@@ -207,11 +207,19 @@ public protocol AnyJourneyResult: AnyObject {
     var continueOrEndAnySignal: FiniteSignal<Any> { get }
 }
 
+func unsafeCastToUIViewController(_ any: Any?) -> UIViewController {
+    if let vc = any as? UIViewController {
+        return vc
+    }
+    
+    fatalError()
+}
+
 extension UIViewController {
     @discardableResult public func present<J: JourneyPresentation>(_ presentation: J) -> AnyJourneyResult {
         let (matter, result) = presentation.presentable.materialize()
         
-        let vc = (matter as? UIViewController) ?? ((matter as? Optional<UIViewController>)!)!
+        let vc = unsafeCastToUIViewController(matter)
         
         let transformedResult = presentation.transform(result) as! AnyJourneyResult
         
@@ -587,7 +595,7 @@ public extension JourneyPresentation {
         let oldConfigure = new.configure
         new.configure = { vc, bag in
             oldConfigure(vc, bag)
-            configure((vc as? UIViewController) ?? ((vc as? Optional<UIViewController>)!)!, bag)
+            configure(unsafeCastToUIViewController(vc), bag)
         }
         return new
     }
