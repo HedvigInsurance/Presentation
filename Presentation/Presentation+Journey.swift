@@ -287,7 +287,7 @@ public struct DismisserPresentable: Presentable {
     }
 }
 
-public struct DismissJourney: JourneyPresentation {
+public struct DismissJourney: ViewControllerJourneyPresentation {
     public var presentable: DismisserPresentable {
         DismisserPresentable()
     }
@@ -317,7 +317,7 @@ public struct PoperPresentable: Presentable {
     }
 }
 
-public struct PopJourney: JourneyPresentation {
+public struct PopJourney: ViewControllerJourneyPresentation {
     public var presentable: PoperPresentable {
         PoperPresentable()
     }
@@ -347,7 +347,7 @@ public struct ContinuerPresentable: Presentable {
     }
 }
 
-public struct ContinueJourney: JourneyPresentation {
+public struct ContinueJourney: ViewControllerJourneyPresentation {
     public var presentable: ContinuerPresentable {
         ContinuerPresentable()
     }
