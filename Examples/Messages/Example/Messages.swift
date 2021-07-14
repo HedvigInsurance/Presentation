@@ -41,6 +41,25 @@ struct TestContinue: Presentable {
     }
 }
 
+struct TestDisposableResult: Presentable {
+    func materialize() -> (UIViewController, Disposable) {
+        let viewController = UIViewController()
+        viewController.title = "Test disposable"
+        
+        let view = UIView()
+        view.backgroundColor = .white
+        viewController.view = view
+        
+        let bag = DisposeBag()
+        
+        bag += {
+            print("i was disposed")
+        }
+        
+        return (viewController, bag)
+    }
+}
+
 struct Embark: Presentable {
     func materialize() -> (UIViewController, FiniteSignal<Int>) {
         let viewController = UIViewController()
@@ -94,12 +113,7 @@ struct EndOfJourney: Presentable {
 
 struct Messages {
     func createAnotherEmbarkJourney() -> some JourneyPresentation {
-        Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
-            DismissJourney().onPresent {
-                // show toast
-                print("hello")
-            }
-        }
+        Presentation(TestDisposableResult(), options: [.defaults, .autoPop]).journey()
     }
     
     func createEmbarkJourney() -> some JourneyPresentation {

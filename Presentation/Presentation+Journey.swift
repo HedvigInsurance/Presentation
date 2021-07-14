@@ -463,6 +463,33 @@ extension Presentation {
             transform: { $0 }
         )
     }
+    
+    public func journey() -> some JourneyPresentation {
+        AnyJourneyPresentation<UIViewController, FiniteSignal<Void>>(
+            presentable: AnyPresentable {
+                let (matter, result) = self.presentable.materialize()
+                let transformedResult = transform(result)
+                
+                return (matter, FiniteSignal { callback in
+                    let bag = DisposeBag()
+                    self.configure(matter, bag)
+                    
+                    if let disposable = transformedResult as? Disposable {
+                        bag.add(disposable)
+                    } else {
+                        bag.hold(transformedResult as AnyObject)
+                    }
+                                        
+                    return bag
+                })
+            },
+            style: style,
+            options: options,
+            configure: { _, _ in },
+            onDismiss: onDismiss,
+            transform: { $0 }
+        )
+    }
 }
 
 public extension JourneyPresentation {
