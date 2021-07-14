@@ -60,6 +60,29 @@ struct TestDisposableResult: Presentable {
     }
 }
 
+struct TestFutureResult: Presentable {
+    func materialize() -> (UIViewController, Future<Void>) {
+        let viewController = UIViewController()
+        viewController.title = "Test disposable"
+        
+        let button = UIButton()
+        viewController.view = button
+        
+        button.setTitle("Close", for: .normal)
+        
+        let bag = DisposeBag()
+        
+        return (viewController, Future { completion in
+            
+            bag += button.onValue { _ in
+                completion(.success)
+            }
+            
+            return bag
+        })
+    }
+}
+
 struct Embark: Presentable {
     func materialize() -> (UIViewController, FiniteSignal<Int>) {
         let viewController = UIViewController()
@@ -113,7 +136,9 @@ struct EndOfJourney: Presentable {
 
 struct Messages {
     func createAnotherEmbarkJourney() -> some JourneyPresentation {
-        Presentation(TestDisposableResult(), options: [.defaults, .autoPop]).journey()
+        Presentation(TestFutureResult(), options: [.defaults, .autoPop]).journey { _ in
+            createEmbarkJourney()
+        }
     }
     
     func createEmbarkJourney() -> some JourneyPresentation {

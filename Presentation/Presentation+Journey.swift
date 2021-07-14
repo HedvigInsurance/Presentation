@@ -188,7 +188,7 @@ extension Future: JourneyResult, AnyJourneyResult {
     public var continueOrEndSignal: FiniteSignal<Value> {
         FiniteSignal { callback in
             self.onValue { value in
-                callback(.value(value))
+                callback(.end)
             }.onError { error in
                 callback(.end(error))
             }
@@ -419,6 +419,10 @@ extension Presentation {
                         }
                     }
                     
+                    bag += transformedResult.continueOrEndSignal.onEnd {
+                        callback(.end)
+                    }
+                    
                     return bag
                 })
             },
@@ -453,6 +457,10 @@ extension Presentation {
                         }
                     }
                     
+                    bag += transformedResult.continueOrEndSignal.onEnd {
+                        callback(.end)
+                    }
+                    
                     return bag
                 })
             },
@@ -476,6 +484,10 @@ extension Presentation {
                     
                     if let disposable = transformedResult as? Disposable {
                         bag.add(disposable)
+                    } else if let transformedResult = transformedResult as? AnyJourneyResult {
+                        bag += transformedResult.continueOrEndAnySignal.onEnd {
+                            callback(.end)
+                        }
                     } else {
                         bag.hold(transformedResult as AnyObject)
                     }
