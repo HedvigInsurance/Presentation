@@ -211,7 +211,7 @@ extension UIViewController {
     @discardableResult public func present<J: JourneyPresentation>(_ presentation: J) -> AnyJourneyResult {
         let (matter, result) = presentation.presentable.materialize()
         
-        let vc = matter as! UIViewController
+        let vc = (matter as? UIViewController) ?? ((matter as? Optional<UIViewController>)!)!
         
         let transformedResult = presentation.transform(result) as! AnyJourneyResult
         
@@ -582,12 +582,12 @@ public extension JourneyPresentation {
 
     /// Returns a new presentation where `configure` will be called at presentation.
     /// - Note: `self`'s `configure` will still be called before the provided `configure`.
-    func addConfiguration(_ configure: @escaping (Self.P.Matter, DisposeBag) -> ()) -> some JourneyPresentation {
+    func addConfiguration(_ configure: @escaping (UIViewController, DisposeBag) -> ()) -> some JourneyPresentation {
         var new = self
         let oldConfigure = new.configure
         new.configure = { vc, bag in
             oldConfigure(vc, bag)
-            configure(vc, bag)
+            configure((vc as? UIViewController) ?? ((vc as? Optional<UIViewController>)!)!, bag)
         }
         return new
     }
