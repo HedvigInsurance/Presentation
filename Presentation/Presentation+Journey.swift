@@ -33,11 +33,7 @@ public struct ConditionalJourneyPresentable<TrueP: Presentable, FalseP: Presenta
     }
 }
 
-protocol ConditionalFindNestedPresentable {
-    var findNestedPresentable: AnyPresentable<UIViewController, Any> { get }
-}
-
-public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: JourneyPresentation>: JourneyPresentation, ConditionalFindNestedPresentable
+public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: JourneyPresentation>: JourneyPresentation
 {
     func tupleUnnest(_ tuple: Any) -> Any {
         if let (a, b) = tuple as? (Any?, Any?) {
@@ -51,19 +47,9 @@ public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP:
         return tuple
     }
     
-    var findNestedPresentable: AnyPresentable<UIViewController, Any> {
-        switch storage {
-        case let .first(presentation):
-            return AnyPresentable {
-                let (matter, result) = presentation.presentable.materialize()
-                return (tupleUnnest(matter) as! UIViewController, tupleUnnest(result))
-            }
-        case let .second(presentation):
-            return AnyPresentable {
-                let (matter, result) = presentation.presentable.materialize()
-                return (tupleUnnest(matter) as! UIViewController, tupleUnnest(result))
-            }
-        }
+    func materializeNested() -> (UIViewController, Any, (TrueP.P.Matter?, FalseP.P.Matter?)) {
+        let (matter, result) = presentable.materialize()
+        return (tupleUnnest(matter) as! UIViewController, tupleUnnest(transform(result)), matter)
     }
     
     public var style: PresentationStyle {
@@ -85,24 +71,52 @@ public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP:
     }
     
     public var configure: ((TrueP.P.Matter?, FalseP.P.Matter?), DisposeBag) -> () {
-        switch storage {
-        case let .first(presentation):
-            return { (matter, bag) in
-                presentation.configure(matter.0!, bag)
+        get {
+            switch storage {
+            case let .first(presentation):
+                return { (matter, bag) in
+                    presentation.configure(matter.0!, bag)
+                }
+            case let .second(presentation):
+                return { (matter, bag) in
+                    presentation.configure(matter.1!, bag)
+                }
             }
-        case let .second(presentation):
-            return { (matter, bag) in
-                presentation.configure(matter.1!, bag)
-            }
+        }
+        set {
+            fatalError()
         }
     }
     
     public var onDismiss: (Error?) -> () {
-        switch storage {
-        case let .first(presentation):
-            return presentation.onDismiss
-        case let .second(presentation):
-            return presentation.onDismiss
+        get {
+            switch storage {
+            case let .first(presentation):
+                return presentation.onDismiss
+            case let .second(presentation):
+                return presentation.onDismiss
+            }
+        }
+        set {
+            fatalError()
+        }
+    }
+    
+    public var transform: ((TrueP.P.Result?, FalseP.P.Result?)) -> (TrueP.P.Result?, FalseP.P.Result?) {
+        get {
+            switch storage {
+            case let .first(presentation):
+                return {
+                    return (presentation.transform($0.0!), $0.1)
+                }
+            case let .second(presentation):
+                return {
+                    return ($0.0, presentation.transform($0.1!))
+                }
+            }
+        }
+        set {
+            fatalError()
         }
     }
     
@@ -210,7 +224,7 @@ extension UIViewController {
         }.onResult { presentation.onDismiss($0.error) }
         .onCancel { presentation.onDismiss(PresentError.dismissed) }
 
-        return result.continueOrEndSignal.atError({ _ in
+        return presentation.transform(result).continueOrEndSignal.atError({ _ in
             presenter.cancel()
         }).atEnd {
             presenter.cancel()
@@ -218,7 +232,7 @@ extension UIViewController {
     }
     
     public func present<TrueJourney: JourneyPresentation, FalseJourney: JourneyPresentation>(_ presentation: ConditionalJourneyPresentation<TrueJourney, FalseJourney>) -> AnyJourneyResult {
-        let (vc, result) = presentation.findNestedPresentable.materialize()
+        let (vc, result, matter) = presentation.materializeNested()
         
         if vc as? DismisserPresentable.DismisserViewController != nil {
             return Future<Void>(error: PresentError.dismissed)
@@ -231,13 +245,11 @@ extension UIViewController {
         }
         
         let presenter = present(vc, style: presentation.style, options: presentation.options) { vc, bag -> () in
-            // cant configure
+            presentation.configure(matter, bag)
         }.onResult { presentation.onDismiss($0.error) }
         .onCancel { presentation.onDismiss(PresentError.dismissed) }
-        
-        let anyJourneyResult = result as! AnyJourneyResult
-
-        return anyJourneyResult.continueOrEndAnySignal.atError({ _ in
+                
+        return (result as! AnyJourneyResult).continueOrEndAnySignal.atError({ _ in
             presenter.cancel()
         }).atEnd {
             presenter.cancel()
@@ -256,12 +268,15 @@ public protocol JourneyPresentation {
 
     /// The presentation options to use when presenting `self`.
     var options: PresentationOptions { get }
+    
+    /// A transformation to apply on the `materialized()` result.
+    var transform: (P.Result) -> P.Result { get set }
 
     /// The configuration to apply just before presenting `self`.
-    var configure: (P.Matter, DisposeBag) -> () { get }
+    var configure: (P.Matter, DisposeBag) -> () { get set }
 
     /// A callback that will be called once presentaion is done, either with `nil` if normally dismissed, or with an error if not.
-    var onDismiss: (Error?) -> () { get }
+    var onDismiss: (Error?) -> () { get set }
 }
 
 public struct DismisserPresentable: Presentable {
@@ -288,6 +303,8 @@ public struct DismissJourney: JourneyPresentation {
     public var configure: (DismisserPresentable.DismisserViewController, DisposeBag) -> () = { _, _  in }
 
     public var onDismiss: (Error?) -> () = { _ in }
+    
+    public var transform: (Future<Void>) -> Future<Void> = { $0 }
 
     public init() {}
 }
@@ -316,6 +333,8 @@ public struct PopJourney: JourneyPresentation {
     public var configure: (PoperPresentable.PoperViewController, DisposeBag) -> () = { _, _  in }
 
     public var onDismiss: (Error?) -> () = { _ in }
+    
+    public var transform: (Future<Void>) -> Future<Void> = { $0 }
 
     public init() {}
 }
@@ -344,6 +363,8 @@ public struct ContinueJourney: JourneyPresentation {
     public var configure: (ContinuerPresentable.ContinuerViewController, DisposeBag) -> () = { _, _  in }
 
     public var onDismiss: (Error?) -> () = { _ in }
+    
+    public var transform: (Future<Void>) -> Future<Void> = { $0 }
 
     public init() {}
 }
@@ -354,6 +375,7 @@ public struct AnyJourneyPresentation<Matter, Result>: JourneyPresentation, ViewC
     public var options: PresentationOptions
     public var configure: (Matter, DisposeBag) -> ()
     public var onDismiss: (Error?) -> ()
+    public var transform: (Result) -> Result
 }
 
 public protocol ViewControllerJourneyPresentation: JourneyPresentation where P.Matter: UIViewController, P.Result: JourneyResult {}
@@ -366,11 +388,12 @@ extension Presentation {
         AnyJourneyPresentation<UIViewController, FiniteSignal<Void>>(
             presentable: AnyPresentable {
                 let (matter, result) = self.presentable.materialize()
+                let transformedResult = transform(result)
                 
                 return (matter, FiniteSignal { callback in
                     let bag = DisposeBag()
                     
-                    bag += result.continueOrEndSignal.onValueDisposePrevious { value in
+                    bag += transformedResult.continueOrEndSignal.onValueDisposePrevious { value in
                         matter.present(content(value)).continueOrEndAnySignal.onError { error in
                             if (error as? PresentError) == PresentError.poped {
                                 callback(.end)
@@ -386,7 +409,8 @@ extension Presentation {
             style: style,
             options: options,
             configure: { _, _ in },
-            onDismiss: onDismiss
+            onDismiss: onDismiss,
+            transform: { $0 }
         )
     }
 
@@ -397,11 +421,12 @@ extension Presentation {
         AnyJourneyPresentation<UIViewController, FiniteSignal<Void>>(
             presentable: AnyPresentable {
                 let (matter, result) = self.presentable.materialize()
+                let transformedResult = transform(result)
 
                 return (matter, FiniteSignal { callback in
                     let bag = DisposeBag()
                     
-                    bag += result.continueOrEndSignal.onValueDisposePrevious { value in
+                    bag += transformedResult.continueOrEndSignal.onValueDisposePrevious { value in
                         matter.present(content(value)).continueOrEndAnySignal.onError { error in
                             if (error as? PresentError) == PresentError.poped {
                                 callback(.end)
@@ -417,7 +442,97 @@ extension Presentation {
             style: style,
             options: options,
             configure: { _, _ in },
-            onDismiss: onDismiss
+            onDismiss: onDismiss,
+            transform: { $0 }
         )
+    }
+}
+
+public extension ViewControllerJourneyPresentation {
+    /// Returns a new presentation where the result will be transformed using `transform`.
+    func map(_ transform: @escaping (P.Result) -> P.Result) -> some ViewControllerJourneyPresentation {
+        let presentationTransform = self.transform
+        var new = self
+        new.transform = { result in transform(presentationTransform(result)) }
+        new.onDismiss = onDismiss
+
+        return new
+    }
+
+    /// Returns a new presentation where the result will be transformed using `transform`.
+    func map<Result: JourneyResult>(_ transform: @escaping (P.Result) -> Result) -> some JourneyPresentation where P.Matter: UIViewController {
+        let presentationTransform = self.transform
+        let anyPresentable = AnyPresentable(presentable, transform: { result in transform(presentationTransform(result)) })
+        var new = AnyJourneyPresentation<P.Matter, Result>(presentable: anyPresentable, style: style, options: options, configure: configure, onDismiss: onDismiss, transform: { $0 })
+        let onDismiss = self.onDismiss
+        new.onDismiss = { onDismiss($0) }
+        return new
+    }
+
+    /// Returns a new presentation where `callback` will be called when `self` is being presented.
+    func onPresent(_ callback: @escaping () -> ()) -> some ViewControllerJourneyPresentation {
+        return map {
+            callback()
+            return $0
+        }
+    }
+
+    /// Returns a new presentation where `callback` will be called when `self` is being dismissed.
+    func onDismiss(_ callback: @escaping () -> ()) -> some JourneyPresentation {
+        let onDismiss = self.onDismiss
+        var new = self
+
+        new.onDismiss = {
+            onDismiss($0)
+            callback()
+        }
+
+        return new
+    }
+
+    /// Returns a new presentation where `callback` will be called with the value of a successful dismiss of `self`.
+    func onValue<Value>(_ callback: @escaping (Value) -> ()) -> some JourneyPresentation where P.Result == Future<Value> {
+        let onDismiss = self.onDismiss
+        var value: Value?
+        var new = map { $0.onValue { value = $0 } }
+
+        new.onDismiss = { error in
+            onDismiss(error)
+            if let value = value, error == nil {
+                callback(value)
+            }
+        }
+
+        return new
+    }
+
+    /// Returns a new presentation where `callback` will be called for every signaled value.
+    func onValue<Kind, Value>(_ callback: @escaping (Value) -> ()) -> some JourneyPresentation where P.Result == CoreSignal<Kind, Value> {
+        return map { $0.atValue(callback) }
+    }
+
+    /// Returns a new presentation where `callback` will be called if `self` was dismiss with an error.
+    func onError(_ callback: @escaping (Error) -> ()) -> some JourneyPresentation {
+        let onDismiss = self.onDismiss
+        var new = self
+        new.onDismiss = {
+            onDismiss($0)
+            if let error = $0 {
+                callback(error)
+            }
+        }
+        return new
+    }
+
+    /// Returns a new presentation where `configure` will be called at presentation.
+    /// - Note: `self`'s `configure` will still be called before the provided `configure`.
+    func addConfiguration(_ configure: @escaping (UIViewController, DisposeBag) -> ()) -> some JourneyPresentation {
+        var new = self
+        let oldConfigure = new.configure
+        new.configure = { vc, bag in
+            oldConfigure(vc, bag)
+            configure(vc, bag)
+        }
+        return new
     }
 }

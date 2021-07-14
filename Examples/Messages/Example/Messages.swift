@@ -93,7 +93,6 @@ struct EndOfJourney: Presentable {
 }
 
 struct Messages {
-    
     func createAnotherEmbarkJourney() -> some ViewControllerJourneyPresentation {
         Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
             if numberOfTaps == 3 {
@@ -114,7 +113,11 @@ struct Messages {
         Presentation(TestContinue(), style: .modal, options: [.defaults, .autoPop]).journey { value in
             switch value {
             case .oneOption:
-                createEmbarkJourney()
+                createEmbarkJourney().onPresent {
+                    print("just presented embark")
+                }.addConfiguration { p, bag in
+                    p.title = "Custom title"
+                }
             case .anotherOption:
                 Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
                     PopJourney()
@@ -136,6 +139,8 @@ struct Messages {
                     DismissJourney()
                 }
             }
+        }.onPresent {
+            print("i just presented")
         }
     }
     
