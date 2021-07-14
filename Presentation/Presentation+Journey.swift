@@ -211,6 +211,8 @@ extension UIViewController {
     public func present<J: JourneyPresentation>(_ presentation: J) -> FiniteSignal<Void> where J.P.Matter: UIViewController, J.P.Result: JourneyResult {
         let (vc, result) = presentation.presentable.materialize()
         
+        let transformedResult = presentation.transform(result)
+        
         if vc as? DismisserPresentable.DismisserViewController != nil {
             return Future<Void>(error: PresentError.dismissed).continueOrEndSignal
         } else if vc as? PoperPresentable.PoperViewController != nil {
@@ -224,7 +226,7 @@ extension UIViewController {
         }.onResult { presentation.onDismiss($0.error) }
         .onCancel { presentation.onDismiss(PresentError.dismissed) }
 
-        return presentation.transform(result).continueOrEndSignal.atError({ _ in
+        return transformedResult.continueOrEndSignal.atError({ _ in
             presenter.cancel()
         }).atEnd {
             presenter.cancel()
