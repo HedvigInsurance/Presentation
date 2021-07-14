@@ -222,7 +222,7 @@ extension UIViewController {
         
         let vc = unsafeCastToUIViewController(tupleUnnest(matter))
         
-        let transformedResult = presentation.transform(result) as! AnyJourneyResult
+        let transformedResult = tupleUnnest(presentation.transform(result)) as! AnyJourneyResult
         
         if vc as? DismisserPresentable.DismisserViewController != nil {
             return Future<Void>(error: PresentError.dismissed).continueOrEndSignal
