@@ -158,6 +158,9 @@ public extension UIViewController {
 public enum PresentError: Error {
     // The presentation was dismissed.
     case dismissed
+    
+    // The presentation was poped
+    case poped
 
      // The presentation was not possible.
     case presentationNotPossible

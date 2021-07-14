@@ -200,7 +200,7 @@ extension UIViewController {
         if vc as? DismisserPresentable.DismisserViewController != nil {
             return Future<Void>(error: PresentError.dismissed).continueOrEndSignal
         } else if vc as? PoperPresentable.PoperViewController != nil {
-            return Future<Void>(immediate: { () }).continueOrEndSignal
+            return Future<Void>(error: PresentError.poped).continueOrEndSignal
         } else if vc as? ContinuerPresentable.ContinuerViewController != nil {
             return Future<Void>().continueOrEndSignal
         }
@@ -223,7 +223,7 @@ extension UIViewController {
         if vc as? DismisserPresentable.DismisserViewController != nil {
             return Future<Void>(error: PresentError.dismissed)
         } else if vc as? PoperPresentable.PoperViewController != nil {
-            return Future<Void>(immediate: { () })
+            return Future<Void>(error: PresentError.poped)
         } else if vc as? ContinuerPresentable.ContinuerViewController != nil {
             return Future<Void> { _ in
                 return NilDisposer()
@@ -370,15 +370,14 @@ extension Presentation {
                 return (matter, FiniteSignal { callback in
                     let bag = DisposeBag()
                     
-                    bag += result.continueOrEndSignal.atValue { value in
-                        bag += matter.present(content(value)).continueOrEndAnySignal.atValue { value in
-                            print(value)
-                            callback(.value(()))
-                        }.onError { error in
-                            callback(.end(error))
+                    bag += result.continueOrEndSignal.onValueDisposePrevious { value in
+                        matter.present(content(value)).continueOrEndAnySignal.atError { error in
+                            if (error as? PresentError) == PresentError.poped {
+                                callback(.end)
+                            } else {
+                                callback(.end(error))
+                            }
                         }
-                    }.onEnd {
-                        callback(.end)
                     }
                     
                     return bag
@@ -402,17 +401,14 @@ extension Presentation {
                 return (matter, FiniteSignal { callback in
                     let bag = DisposeBag()
                     
-
-                    bag += result.continueOrEndSignal.atValue { value in
-                        let presentation = content(value)
-                        
-                        bag += matter.present(presentation).continueOrEndAnySignal.atValue { _ in
-                            callback(.value(()))
-                        }.onError { error in
-                            callback(.end(error))
+                    bag += result.continueOrEndSignal.onValueDisposePrevious { value in
+                        matter.present(content(value)).continueOrEndAnySignal.atError { error in
+                            if (error as? PresentError) == PresentError.poped {
+                                callback(.end)
+                            } else {
+                                callback(.end(error))
+                            }
                         }
-                    }.onEnd {
-                        callback(.end)
                     }
                     
                     return bag

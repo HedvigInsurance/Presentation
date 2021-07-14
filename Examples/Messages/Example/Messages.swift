@@ -58,6 +58,11 @@ struct Embark: Presentable {
             bag += button.onValue({ _ in
                 numberOfTaps = numberOfTaps + 1
                 
+                if numberOfTaps > 5 {
+                    callback(.end)
+                    return
+                }
+                
                 callback(.value(numberOfTaps))
             })
             
@@ -88,17 +93,28 @@ struct EndOfJourney: Presentable {
 }
 
 struct Messages {
+    
+    func createAnotherEmbarkJourney() -> some ViewControllerJourneyPresentation {
+        Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
+            if numberOfTaps == 3 {
+                PopJourney()
+            }
+        }
+    }
+    
+    func createEmbarkJourney() -> some ViewControllerJourneyPresentation {
+        Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
+            if numberOfTaps > 3 {
+                createAnotherEmbarkJourney()
+            }
+        }
+    }
+    
     var flow: some ViewControllerJourneyPresentation {
         Presentation(TestContinue(), style: .modal, options: [.defaults, .autoPop]).journey { value in
             switch value {
             case .oneOption:
-                Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
-                    if numberOfTaps == 3 {
-                        Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
-                            PopJourney()
-                        }
-                    }
-                }
+                createEmbarkJourney()
             case .anotherOption:
                 Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
                     PopJourney()
@@ -184,8 +200,8 @@ extension Messages: Presentable {
         }
 
         bag += composeButton.onValue {
-            bag += viewController.present(flow).onValue({ _ in
-                
+            bag += viewController.present(flow).onValue({ hello in
+                print(hello)
             })
         }
 
