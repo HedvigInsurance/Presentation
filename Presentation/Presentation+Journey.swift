@@ -33,19 +33,20 @@ public struct ConditionalJourneyPresentable<TrueP: Presentable, FalseP: Presenta
     }
 }
 
+func tupleUnnest(_ tuple: Any) -> Any {
+    if let (a, b) = tuple as? (Any?, Any?) {
+        if let a = a {
+            return tupleUnnest(a)
+        } else if let b = b {
+            return tupleUnnest(b)
+        }
+     }
+    
+    return tuple
+}
+
 public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: JourneyPresentation>: JourneyPresentation
 {
-    func tupleUnnest(_ tuple: Any) -> Any {
-        if let (a, b) = tuple as? (Any?, Any?) {
-            if let a = a {
-                return tupleUnnest(a)
-            } else if let b = b {
-                return tupleUnnest(b)
-            }
-         }
-        
-        return tuple
-    }
     
     func materializeNested() -> (UIViewController, Any, (TrueP.P.Matter?, FalseP.P.Matter?)) {
         let (matter, result) = presentable.materialize()
@@ -219,7 +220,7 @@ extension UIViewController {
     @discardableResult public func present<J: JourneyPresentation>(_ presentation: J) -> AnyJourneyResult {
         let (matter, result) = presentation.presentable.materialize()
         
-        let vc = unsafeCastToUIViewController(matter)
+        let vc = unsafeCastToUIViewController(tupleUnnest(matter))
         
         let transformedResult = presentation.transform(result) as! AnyJourneyResult
         
