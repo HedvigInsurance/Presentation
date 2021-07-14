@@ -49,7 +49,7 @@ public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP:
     
     func materializeNested() -> (UIViewController, Any, (TrueP.P.Matter?, FalseP.P.Matter?)) {
         let (matter, result) = presentable.materialize()
-        return (tupleUnnest(matter) as! UIViewController, tupleUnnest(transform(result)), matter)
+        return (unsafeCastToUIViewController(tupleUnnest(matter)), tupleUnnest(transform(result)), matter)
     }
     
     public var style: PresentationStyle {
