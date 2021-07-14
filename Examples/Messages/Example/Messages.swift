@@ -93,15 +93,16 @@ struct EndOfJourney: Presentable {
 }
 
 struct Messages {
-    func createAnotherEmbarkJourney() -> some ViewControllerJourneyPresentation {
+    func createAnotherEmbarkJourney() -> some JourneyPresentation {
         Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
-            if numberOfTaps == 3 {
-                PopJourney()
+            DismissJourney().onPresent {
+                // show toast
+                print("hello")
             }
         }
     }
     
-    func createEmbarkJourney() -> some ViewControllerJourneyPresentation {
+    func createEmbarkJourney() -> some JourneyPresentation {
         Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
             if numberOfTaps > 3 {
                 createAnotherEmbarkJourney()
@@ -109,14 +110,15 @@ struct Messages {
         }
     }
     
-    var flow: some ViewControllerJourneyPresentation {
+    var flow: some JourneyPresentation {
         Presentation(TestContinue(), style: .modal, options: [.defaults, .autoPop]).journey { value in
             switch value {
             case .oneOption:
                 createEmbarkJourney().onPresent {
                     print("just presented embark")
                 }.addConfiguration { p, bag in
-                    p.title = "Custom title"
+                    
+                    //p.title = "Custom title"
                 }
             case .anotherOption:
                 Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
@@ -205,9 +207,7 @@ extension Messages: Presentable {
         }
 
         bag += composeButton.onValue {
-            bag += viewController.present(flow).onValue({ hello in
-                print(hello)
-            })
+            viewController.present(flow)
         }
 
         return (split, bag)
