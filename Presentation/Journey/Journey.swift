@@ -89,8 +89,8 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                 let result: JourneyPresentResult<InnerJourney> = matter.present(presentationWithError)
                 
                 switch result {
-                case .presented:
-                    break
+                case let .presented(result):
+                    bag.hold(result as AnyObject)
                 case .shouldDismiss:
                     if options.contains(.autoPop) {
                         self.onDismiss(JourneyError.dismissed)
@@ -160,8 +160,8 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                 let result: JourneyPresentResult<InnerJourney> = matter.present(presentationWithError)
                 
                 switch result {
-                case .presented:
-                    break
+                case let .presented(result):
+                    bag.hold(result as AnyObject)
                 case .shouldDismiss:
                     if options.contains(.autoPop) {
                         self.onDismiss(JourneyError.dismissed)
