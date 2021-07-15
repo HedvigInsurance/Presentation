@@ -74,6 +74,8 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
             
             bag += result?.onValue { value in
                 let presentation = content(value)
+                var innerPresentationBag: DisposeBag? = nil
+                
                 let presentationWithError = presentation.onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed {
                         if options.contains(.autoPop) {
@@ -81,9 +83,11 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                         }
                         
                         if presentation.options.contains(.autoPop) {
-                            bag.dispose()
+                            innerPresentationBag?.dispose()
                         }
                     }
+                }.addConfiguration { _, bag in
+                    innerPresentationBag = bag
                 }
                 
                 let result: JourneyPresentResult<InnerJourney> = matter.present(presentationWithError)
@@ -97,10 +101,10 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                     }
                     
                     if presentation.options.contains(.autoPop) {
-                        bag.dispose()
+                        innerPresentationBag?.dispose()
                     }
                 case .shouldPop:
-                    bag.dispose()
+                    innerPresentationBag?.dispose()
                 case .shouldContinue:
                     break
                 }
@@ -145,6 +149,8 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                         
             bag += result?.onValue { value in
                 let presentation = content(value)
+                var innerPresentationBag: DisposeBag? = nil
+                
                 let presentationWithError = presentation.onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed {
                         if options.contains(.autoPop) {
@@ -152,9 +158,11 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                         }
                         
                         if presentation.options.contains(.autoPop) {
-                            bag.dispose()
+                            innerPresentationBag?.dispose()
                         }
                     }
+                }.addConfiguration { _, bag in
+                    innerPresentationBag = bag
                 }
                 
                 let result: JourneyPresentResult<InnerJourney> = matter.present(presentationWithError)
@@ -168,10 +176,10 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                     }
                     
                     if presentation.options.contains(.autoPop) {
-                        bag.dispose()
+                        innerPresentationBag?.dispose()
                     }
                 case .shouldPop:
-                    bag.dispose()
+                    innerPresentationBag?.dispose()
                 case .shouldContinue:
                     break
                 }
