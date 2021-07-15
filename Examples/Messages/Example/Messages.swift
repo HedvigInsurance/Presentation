@@ -88,6 +88,9 @@ struct Embark: Presentable {
         let viewController = UIViewController()
         viewController.title = "Test Continue"
         
+        let barButtonItem = UIBarButtonItem(title: "Close thing", style: .done, target: nil, action: nil)
+        viewController.navigationItem.leftBarButtonItem = barButtonItem
+        
         var numberOfTaps = 0
 
         let button = UIButton(type: .infoDark)
@@ -96,6 +99,9 @@ struct Embark: Presentable {
         let bag = DisposeBag()
         
         return (viewController, FiniteSignal { callback in
+            bag += barButtonItem.onValue { _ in
+                callback(.end)
+            }
             
             bag += button.onValue({ _ in
                 numberOfTaps = numberOfTaps + 1
@@ -158,7 +164,14 @@ struct Messages {
     
     func createEmbarkJourney() -> some JourneyPresentation {
         Journey(Embark()) { numberOfTaps in
-            if numberOfTaps > 0 {
+            switch numberOfTaps {
+            case 1:
+                createAnotherEmbarkJourney()
+            case 2:
+                createAnotherEmbarkJourney()
+            case 10:
+                createAnotherEmbarkJourney()
+            default:
                 createAnotherEmbarkJourney()
             }
         }

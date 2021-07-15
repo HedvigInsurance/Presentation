@@ -204,18 +204,16 @@ extension UIViewController {
         } else if vc as? ContinuerPresentable.ContinuerViewController != nil {
             return .shouldContinue
         }
-
-        let bag = DisposeBag()
         
         let transformedResult = presentation.transform(result)
         
         present(vc, style: presentation.style, options: presentation.options) { vc, bag -> () in
             presentation.configure(matter, bag)
-        }.onResult { _ in
-            bag.dispose()
+        }.onResult {
+            presentation.onDismiss($0.error)
         }
         .onCancel {
-            bag.dispose()
+            presentation.onDismiss(JourneyError.cancelled)
         }
         
         return .presented(transformedResult)
@@ -336,6 +334,7 @@ public struct ContinueJourney: JourneyPresentation {
 
 public enum JourneyError: Error {
     case dismissed
+    case cancelled
 }
 
 public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIViewController {
@@ -372,6 +371,10 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         }
         
         configure = { matter, bag in
+            bag += result?.onEnd {
+                bag.dispose()
+            }
+            
             bag += result?.onValue { value in
                 let presentation = content(value).onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed && options.contains(.autoPop) {
@@ -473,8 +476,7 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                 
                 bag += future.onResult { result in
                     completion(result)
-                    dismissCallbacker.callAll()
-                    self.onDismiss(JourneyError.dismissed)
+                    bag.dispose()
                 }
                 
                 return bag
