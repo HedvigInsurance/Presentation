@@ -196,6 +196,8 @@ extension UIViewController {
         let (matter, result) = presentation.presentable.materialize()
         
         let vc = unsafeCastToUIViewController(tupleUnnest(matter))
+        
+        let transformedResult = presentation.transform(result)
                 
         if vc as? DismisserPresentable.DismisserViewController != nil {
             return .shouldDismiss
@@ -204,9 +206,7 @@ extension UIViewController {
         } else if vc as? ContinuerPresentable.ContinuerViewController != nil {
             return .shouldContinue
         }
-        
-        let transformedResult = presentation.transform(result)
-        
+                
         present(vc, style: presentation.style, options: presentation.options) { vc, bag -> () in
             presentation.configure(matter, bag)
         }.onResult {
