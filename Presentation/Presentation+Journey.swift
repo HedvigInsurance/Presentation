@@ -376,21 +376,32 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
             }
             
             bag += result?.onValue { value in
-                let presentation = content(value).onError { error in
-                    if let error = error as? JourneyError, error == JourneyError.dismissed && options.contains(.autoPop) {
-                        self.onDismiss(JourneyError.dismissed)
-                        bag.dispose()
+                let presentation = content(value)
+                let presentationWithError = presentation.onError { error in
+                    if let error = error as? JourneyError, error == JourneyError.dismissed {
+                        if options.contains(.autoPop) {
+                            self.onDismiss(JourneyError.dismissed)
+                        }
+                        
+                        if presentation.options.contains(.autoPop) {
+                            bag.dispose()
+                        }
                     }
                 }
                 
-                let result: JourneyPresentResult<InnerJourney> = matter.present(presentation)
+                let result: JourneyPresentResult<InnerJourney> = matter.present(presentationWithError)
                 
                 switch result {
                 case .presented:
                     break
                 case .shouldDismiss:
-                    self.onDismiss(JourneyError.dismissed)
-                    bag.dispose()
+                    if options.contains(.autoPop) {
+                        self.onDismiss(JourneyError.dismissed)
+                    }
+                    
+                    if presentation.options.contains(.autoPop) {
+                        bag.dispose()
+                    }
                 case .shouldPop:
                     bag.dispose()
                 case .shouldContinue:
@@ -429,20 +440,32 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         
         self.configure = { matter, bag in
             bag += result?.onValue { value in
-                let presentation = content(value).onError { error in
-                    if let error = error as? JourneyError, error == JourneyError.dismissed && options.contains(.autoPop) {
-                        self.onDismiss(JourneyError.dismissed)
-                        bag.dispose()
+                let presentation = content(value)
+                let presentationWithError = presentation.onError { error in
+                    if let error = error as? JourneyError, error == JourneyError.dismissed {
+                        if options.contains(.autoPop) {
+                            self.onDismiss(JourneyError.dismissed)
+                        }
+                        
+                        if presentation.options.contains(.autoPop) {
+                            bag.dispose()
+                        }
                     }
                 }
                 
-                let result: JourneyPresentResult<InnerJourney> = matter.present(presentation)
+                let result: JourneyPresentResult<InnerJourney> = matter.present(presentationWithError)
                 
                 switch result {
                 case .presented:
                     break
                 case .shouldDismiss:
-                    self.onDismiss(JourneyError.dismissed)
+                    if options.contains(.autoPop) {
+                        self.onDismiss(JourneyError.dismissed)
+                    }
+                    
+                    if presentation.options.contains(.autoPop) {
+                        bag.dispose()
+                    }
                 case .shouldPop:
                     bag.dispose()
                 case .shouldContinue:

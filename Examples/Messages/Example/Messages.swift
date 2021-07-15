@@ -88,9 +88,6 @@ struct Embark: Presentable {
         let viewController = UIViewController()
         viewController.title = "Test Continue"
         
-        let barButtonItem = UIBarButtonItem(title: "Close thing", style: .done, target: nil, action: nil)
-        viewController.navigationItem.leftBarButtonItem = barButtonItem
-        
         var numberOfTaps = 0
 
         let button = UIButton(type: .infoDark)
@@ -98,11 +95,7 @@ struct Embark: Presentable {
         
         let bag = DisposeBag()
         
-        return (viewController, FiniteSignal { callback in
-            bag += barButtonItem.onValue { _ in
-                callback(.end)
-            }
-            
+        return (viewController, FiniteSignal { callback in            
             bag += button.onValue({ _ in
                 numberOfTaps = numberOfTaps + 1
                 
@@ -111,6 +104,34 @@ struct Embark: Presentable {
             
             return bag
         })
+    }
+}
+
+extension JourneyPresentation {
+    public func withDismissButton() -> some JourneyPresentation {
+        let closeButtonItem = UIBarButtonItem(title: "Close thing", style: .done, target: nil, action: nil)
+
+        var onDismiss: () -> Void = {}
+
+        let newPresentation = addConfiguration { viewController, bag in
+            // move over any barButtonItems to the other side
+            if viewController.navigationItem.rightBarButtonItems != nil {
+                viewController.navigationItem.leftBarButtonItems =
+                    viewController.navigationItem.rightBarButtonItems
+            }
+            
+            bag += closeButtonItem.onValue { _ in
+                onDismiss()
+            }
+
+            viewController.navigationItem.rightBarButtonItem = closeButtonItem
+        }
+        
+        onDismiss = {
+            newPresentation.onDismiss(JourneyError.dismissed)
+        }
+        
+        return newPresentation
     }
 }
 
@@ -166,7 +187,7 @@ struct Messages {
         Journey(Embark()) { numberOfTaps in
             switch numberOfTaps {
             case 1:
-                createAnotherEmbarkJourney()
+                createAnotherEmbarkJourney().withDismissButton()
             case 2:
                 createAnotherEmbarkJourney()
             case 10:
