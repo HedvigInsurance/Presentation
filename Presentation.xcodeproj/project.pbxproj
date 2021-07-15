@@ -14,7 +14,12 @@
 		722FE3B622EA357A00EB04A7 /* CustomAdaptivePresentationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722FE3B522EA357A00EB04A7 /* CustomAdaptivePresentationDelegate.swift */; };
 		728711A2229818B700A086DF /* PresentationEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728711A1229818B700A086DF /* PresentationEvent.swift */; };
 		EB3F6D7825A44ABF009C95C2 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = EB3F6D7725A44ABF009C95C2 /* Flow */; };
-		EBDCE30B269DC2F2004977CD /* Presentation+Journey.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDCE30A269DC2F2004977CD /* Presentation+Journey.swift */; };
+		EBDCE30B269DC2F2004977CD /* Journey.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDCE30A269DC2F2004977CD /* Journey.swift */; };
+		EBEE960626A0A77900F50488 /* JourneyConditional.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960526A0A77900F50488 /* JourneyConditional.swift */; };
+		EBEE960826A0A79700F50488 /* JourneyBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960726A0A79700F50488 /* JourneyBuilder.swift */; };
+		EBEE960A26A0A7BC00F50488 /* JourneyPresentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960926A0A7BC00F50488 /* JourneyPresentation.swift */; };
+		EBEE960C26A0A7D600F50488 /* UtilityJournies.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960B26A0A7D600F50488 /* UtilityJournies.swift */; };
+		EBEE960E26A0A81200F50488 /* UIViewController+Journey.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960D26A0A81200F50488 /* UIViewController+Journey.swift */; };
 		F617E3991C197D7600B567FB /* UIViewController+Presentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F617E3981C197D7600B567FB /* UIViewController+Presentation.swift */; };
 		F646BEDB1C85CF5400AA7526 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = F646BEDA1C85CF5400AA7526 /* Alert.swift */; };
 		F65D5DC11C58C421002B5D95 /* DualNavigationControllersSplitDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65D5DC01C58C421002B5D95 /* DualNavigationControllersSplitDelegate.swift */; };
@@ -52,7 +57,12 @@
 		5B5111782357143500128609 /* FlowIntegrationTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FlowIntegrationTests.swift; sourceTree = "<group>"; };
 		722FE3B522EA357A00EB04A7 /* CustomAdaptivePresentationDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomAdaptivePresentationDelegate.swift; sourceTree = "<group>"; };
 		728711A1229818B700A086DF /* PresentationEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentationEvent.swift; sourceTree = "<group>"; };
-		EBDCE30A269DC2F2004977CD /* Presentation+Journey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Presentation+Journey.swift"; sourceTree = "<group>"; };
+		EBDCE30A269DC2F2004977CD /* Journey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Journey.swift; sourceTree = "<group>"; };
+		EBEE960526A0A77900F50488 /* JourneyConditional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyConditional.swift; sourceTree = "<group>"; };
+		EBEE960726A0A79700F50488 /* JourneyBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyBuilder.swift; sourceTree = "<group>"; };
+		EBEE960926A0A7BC00F50488 /* JourneyPresentation.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyPresentation.swift; sourceTree = "<group>"; };
+		EBEE960B26A0A7D600F50488 /* UtilityJournies.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UtilityJournies.swift; sourceTree = "<group>"; };
+		EBEE960D26A0A81200F50488 /* UIViewController+Journey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Journey.swift"; sourceTree = "<group>"; };
 		F617E3751C197D5E00B567FB /* Presentation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Presentation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F617E37A1C197D5E00B567FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F617E3981C197D7600B567FB /* UIViewController+Presentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UIViewController+Presentation.swift"; sourceTree = "<group>"; };
@@ -100,6 +110,19 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		EBEE960426A0A76100F50488 /* Journey */ = {
+			isa = PBXGroup;
+			children = (
+				EBDCE30A269DC2F2004977CD /* Journey.swift */,
+				EBEE960526A0A77900F50488 /* JourneyConditional.swift */,
+				EBEE960726A0A79700F50488 /* JourneyBuilder.swift */,
+				EBEE960926A0A7BC00F50488 /* JourneyPresentation.swift */,
+				EBEE960B26A0A7D600F50488 /* UtilityJournies.swift */,
+				EBEE960D26A0A81200F50488 /* UIViewController+Journey.swift */,
+			);
+			path = Journey;
+			sourceTree = "<group>";
+		};
 		F617E36B1C197D5E00B567FB = {
 			isa = PBXGroup;
 			children = (
@@ -125,6 +148,7 @@
 		F617E3771C197D5E00B567FB /* Presentation */ = {
 			isa = PBXGroup;
 			children = (
+				EBEE960426A0A76100F50488 /* Journey */,
 				2177C8F21D897360000DECA4 /* Presentable.swift */,
 				F6DCDD031EC83F9D00ED39F6 /* AnyPresentation.swift */,
 				F66934091E79384400F83529 /* PresentationStyle.swift */,
@@ -145,7 +169,6 @@
 				F666095C1F84C9A0004F2055 /* AssociatedValues.swift */,
 				1C0656EA1F8290CB00E60465 /* MemoryUtils.swift */,
 				F617E37A1C197D5E00B567FB /* Info.plist */,
-				EBDCE30A269DC2F2004977CD /* Presentation+Journey.swift */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -318,13 +341,17 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBEE960626A0A77900F50488 /* JourneyConditional.swift in Sources */,
 				F65D5DC11C58C421002B5D95 /* DualNavigationControllersSplitDelegate.swift in Sources */,
 				F68A43C81C8047DB0097D483 /* UINavigationController+Signals.swift in Sources */,
+				EBEE960C26A0A7D600F50488 /* UtilityJournies.swift in Sources */,
 				F6A2D4981EA9DF3B00C93D9A /* Presentation.swift in Sources */,
 				F617E3991C197D7600B567FB /* UIViewController+Presentation.swift in Sources */,
-				EBDCE30B269DC2F2004977CD /* Presentation+Journey.swift in Sources */,
+				EBEE960A26A0A7BC00F50488 /* JourneyPresentation.swift in Sources */,
+				EBDCE30B269DC2F2004977CD /* Journey.swift in Sources */,
 				F66292A1206911BA00DDE0DF /* UINavigationController+Presenting.swift in Sources */,
 				F669340E1E7939E000F83529 /* PresentationOptions.swift in Sources */,
+				EBEE960826A0A79700F50488 /* JourneyBuilder.swift in Sources */,
 				722FE3B622EA357A00EB04A7 /* CustomAdaptivePresentationDelegate.swift in Sources */,
 				F68AF6061F30AB6F009C28A9 /* MasterDetailSelection.swift in Sources */,
 				1C0656EB1F8290CB00E60465 /* MemoryUtils.swift in Sources */,
@@ -332,6 +359,7 @@
 				F6EA2D251E72D73B0054C302 /* DismissInstallable.swift in Sources */,
 				728711A2229818B700A086DF /* PresentationEvent.swift in Sources */,
 				F66292A0206911BA00DDE0DF /* UISplitViewController+Presenting.swift in Sources */,
+				EBEE960E26A0A81200F50488 /* UIViewController+Journey.swift in Sources */,
 				F666095F1F84C9A0004F2055 /* AssociatedValues.swift in Sources */,
 				F65D5DC71C58C546002B5D95 /* PresentingViewController.swift in Sources */,
 				F6DCDD041EC83F9D00ED39F6 /* AnyPresentation.swift in Sources */,

@@ -176,10 +176,14 @@ struct Messages {
             Journey(TestContinue()) { value in
                 Journey(TestContinue()) { value in
                     Journey(TestContinue()) { value in
-                        DismissJourney()
+                        DismissJourney().onPresent {
+                            print("test")
+                        }
                     }
                 }
             }
+        }.onValue { numberOfTaps in
+            print(numberOfTaps)
         }
     }
     
