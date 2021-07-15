@@ -100,11 +100,6 @@ struct Embark: Presentable {
             bag += button.onValue({ _ in
                 numberOfTaps = numberOfTaps + 1
                 
-                if numberOfTaps > 5 {
-                    callback(.end)
-                    return
-                }
-                
                 callback(.value(numberOfTaps))
             })
             
@@ -134,54 +129,44 @@ struct EndOfJourney: Presentable {
     }
 }
 
+struct DisposableEndOfJourney: Presentable {
+    func materialize() -> (UIViewController, Disposable) {
+        let viewController = UIViewController()
+        viewController.title = "end this is"
+
+        let button = UIButton(type: .detailDisclosure)
+        viewController.view = button
+        
+        let bag = DisposeBag()
+        
+        return (viewController, bag)
+    }
+}
+
 struct Messages {
     func createAnotherEmbarkJourney() -> some JourneyPresentation {
-        Presentation(TestFutureResult(), options: [.defaults, .autoPop]).journey { _ in
-            createEmbarkJourney()
+        Journey(Embark()) { numberOfTaps in
+            Journey(TestContinue()) { value in
+                Journey(TestContinue()) { value in
+                    Journey(TestContinue()) { value in
+                        DismissJourney()
+                    }
+                }
+            }
         }
     }
     
     func createEmbarkJourney() -> some JourneyPresentation {
-        Presentation(Embark(), options: [.defaults, .autoPop]).journey { numberOfTaps in
-            if numberOfTaps > 3 {
+        Journey(Embark()) { numberOfTaps in
+            if numberOfTaps > 0 {
                 createAnotherEmbarkJourney()
             }
         }
     }
     
     var flow: some JourneyPresentation {
-        Presentation(TestContinue(), style: .modal, options: [.defaults, .autoPop]).journey { value in
-            switch value {
-            case .oneOption:
-                createEmbarkJourney().onPresent {
-                    print("just presented embark")
-                }.addConfiguration { p, bag in
-                    
-                    //p.title = "Custom title"
-                }
-            case .anotherOption:
-                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
-                    PopJourney()
-                }
-            case .thirdOption:
-                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
-                    PopJourney()
-                }
-            case .fourthOption:
-                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
-                    DismissJourney()
-                }
-            case .fifthOption:
-                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
-                    DismissJourney()
-                }
-            case .sixthOption:
-                Presentation(Embark(), options: [.defaults, .autoPop]).journey { bla in
-                    DismissJourney()
-                }
-            }
-        }.onPresent {
-            print("i just presented")
+        Journey(TestContinue(), style: .modal) { value in
+            createEmbarkJourney()
         }
     }
     
@@ -246,7 +231,9 @@ extension Messages: Presentable {
         }
 
         bag += composeButton.onValue {
-            viewController.present(flow)
+            viewController.present(flow).onValue { _ in
+                
+            }
         }
 
         return (split, bag)
