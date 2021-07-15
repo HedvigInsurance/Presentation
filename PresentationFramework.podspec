@@ -14,6 +14,6 @@ Pod::Spec.new do |s|
   s.dependency 'FlowFramework', '>= 1.8.4'
 
   s.source       = { :git => "https://github.com/iZettle/Presentation.git", :tag => "#{s.version}" }
-  s.source_files = "Presentation/*.{swift}"
+  s.source_files = "Presentation/**/*.{swift}"
   s.swift_version = '5.0'
 end

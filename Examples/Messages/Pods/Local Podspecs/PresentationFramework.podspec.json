@@ -24,7 +24,7 @@
     "git": "https://github.com/iZettle/Presentation.git",
     "tag": "1.13.0"
   },
-  "source_files": "Presentation/*.{swift}",
+  "source_files": "Presentation/**/*.{swift}",
   "swift_versions": "5.0",
   "swift_version": "5.0"
 }

@@ -181,6 +181,8 @@ struct Messages {
                         }
                     }
                 }
+            }.onPresent {
+                print("test")
             }
         }.onValue { numberOfTaps in
             print(numberOfTaps)
@@ -189,22 +191,33 @@ struct Messages {
     
     func createEmbarkJourney() -> some JourneyPresentation {
         Journey(Embark()) { numberOfTaps in
-            switch numberOfTaps {
-            case 1:
-                createAnotherEmbarkJourney().withDismissButton()
-            case 2:
-                createAnotherEmbarkJourney()
-            case 10:
-                createAnotherEmbarkJourney()
-            default:
-                createAnotherEmbarkJourney()
+            Journey(Embark(), options: [.defaults]) { numberOfTaps in
+                Journey(TestContinue()) { value in
+                    Journey(TestContinue()) { value in
+                        Journey(TestContinue()) { value in
+                            DismissJourney().onPresent {
+                                print("test")
+                            }
+                        }
+                    }
+                }.onPresent {
+                    print("test")
+                }
+            }.onValue { numberOfTaps in
+                print(numberOfTaps)
             }
+        }.onValue { numberOfTaps in
+            print(numberOfTaps)
         }
     }
     
     var flow: some JourneyPresentation {
         Journey(TestContinue(), style: .modal) { value in
-            createEmbarkJourney()
+            createEmbarkJourney().onPresent {
+                print("is this called")
+            }
+        }.onValue { value in
+            print(value)
         }
     }
     
