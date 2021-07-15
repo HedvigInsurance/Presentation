@@ -364,6 +364,7 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         self.onDismiss = { _ in }
         
         var result: P.Result? = nil
+        var presentBag: DisposeBag? = nil
         
         self.transform = { signal in
             result = signal
@@ -371,6 +372,8 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         }
         
         configure = { matter, bag in
+            presentBag = bag
+            
             bag += result?.onEnd {
                 bag.dispose()
             }
@@ -412,6 +415,8 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         
         onDismiss = { _ in
             result = nil
+            presentBag?.dispose()
+            presentBag = nil
         }
     }
     
@@ -428,9 +433,12 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         self.configure = { _, _ in }
         
         var result: P.Result? = nil
+        var presentBag: DisposeBag? = nil
         
         self.onDismiss = { _ in
             result = nil
+            presentBag?.dispose()
+            presentBag = nil
         }
         
         self.transform = { signal in
@@ -439,6 +447,8 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         }
         
         self.configure = { matter, bag in
+            presentBag = bag
+            
             bag += result?.onValue { value in
                 let presentation = content(value)
                 let presentationWithError = presentation.onError { error in
@@ -493,6 +503,10 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         self.style = style
         self.options = options
         
+        self.onDismiss = { _ in
+            dismissCallbacker.callAll()
+        }
+        
         self.transform = { future in
             Future { completion in
                 let bag = DisposeBag()
@@ -513,8 +527,16 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         options: PresentationOptions = [.defaults, .autoPop]
     ) {
         self.transform = { $0 }
-        self.onDismiss = { _ in }
-        self.configure = { _, _ in }
+        
+        var presentBag: DisposeBag? = nil
+        
+        self.onDismiss = { _ in
+            presentBag?.dispose()
+            presentBag = nil
+        }
+        self.configure = { _, bag in
+            presentBag = bag
+        }
         self.presentable = presentable
         self.style = style
         self.options = options

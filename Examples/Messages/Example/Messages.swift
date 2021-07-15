@@ -95,7 +95,7 @@ struct Embark: Presentable {
         
         let bag = DisposeBag()
         
-        return (viewController, FiniteSignal { callback in            
+        return (viewController, FiniteSignal { callback in
             bag += button.onValue({ _ in
                 numberOfTaps = numberOfTaps + 1
                 
@@ -172,7 +172,7 @@ struct DisposableEndOfJourney: Presentable {
 
 struct Messages {
     func createAnotherEmbarkJourney() -> some JourneyPresentation {
-        Journey(Embark()) { numberOfTaps in
+        Journey(Embark(), options: [.defaults]) { numberOfTaps in
             Journey(TestContinue()) { value in
                 Journey(TestContinue()) { value in
                     Journey(TestContinue()) { value in
