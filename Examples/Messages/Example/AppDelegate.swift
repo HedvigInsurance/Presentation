@@ -17,7 +17,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
         let messages = Messages(messages: testMessages)
-
+        
         let window = UIWindow(frame: UIScreen.main.bounds)
         bag += window.present(Messages.flow)
 

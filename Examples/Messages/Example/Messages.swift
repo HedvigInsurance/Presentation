@@ -83,12 +83,52 @@ struct TestFutureResult: Presentable {
     }
 }
 
+struct EmbarkState {
+    var numberOfTaps: Int = 0
+}
+
+enum EmbarkAction {
+    case updateNumberOfTaps(_ taps: Int)
+}
+
+private var embarkStoreKey = 0
+
+final class EmbarkStore: Store {
+    static func getKey() -> UnsafeMutablePointer<Int> {
+        return withUnsafeMutablePointer(to: &embarkStoreKey, { $0 })
+    }
+    
+    var state: ReadWriteSignal<EmbarkState>
+    
+    func reduce(_ state: EmbarkState, _ action: EmbarkAction) -> EmbarkState {
+        var newState = state
+        
+        switch action {
+            case let .updateNumberOfTaps(taps):
+                newState.numberOfTaps = taps
+        }
+        
+        return newState
+    }
+    
+    init() {
+        self.state = ReadWriteSignal(
+            EmbarkState(numberOfTaps: 0)
+        )
+    }
+
+    func send(_ action: EmbarkAction) {
+        state.value = reduce(state.value, action)
+    }
+}
+
+
 struct Embark: Presentable {
     func materialize() -> (UIViewController, FiniteSignal<Int>) {
         let viewController = UIViewController()
         viewController.title = "Test Continue"
         
-        var numberOfTaps = 0
+        let embarkStore: EmbarkStore = getStore()
 
         let button = UIButton(type: .infoDark)
         viewController.view = button
@@ -96,8 +136,9 @@ struct Embark: Presentable {
         let bag = DisposeBag()
         
         return (viewController, FiniteSignal { callback in
-            bag += button.onValue({ _ in
-                numberOfTaps = numberOfTaps + 1
+            bag += button.withLatestFrom(embarkStore.state.atOnce().plain()).onValue({ _, state in
+                let numberOfTaps = state.numberOfTaps + 1
+                embarkStore.send(EmbarkAction.updateNumberOfTaps(numberOfTaps))
                 
                 callback(.value(numberOfTaps))
             })
@@ -160,7 +201,7 @@ struct DisposableEndOfJourney: Presentable {
     func materialize() -> (UIViewController, Disposable) {
         let viewController = UIViewController()
         viewController.title = "end this is"
-
+        
         let button = UIButton(type: .detailDisclosure)
         viewController.view = button
         

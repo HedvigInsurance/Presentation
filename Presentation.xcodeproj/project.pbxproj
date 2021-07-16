@@ -22,6 +22,7 @@
 		EBEE960E26A0A81200F50488 /* UIViewController+Journey.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960D26A0A81200F50488 /* UIViewController+Journey.swift */; };
 		EBEE961026A156D700F50488 /* GroupJourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960F26A156D700F50488 /* GroupJourney.swift */; };
 		EBEE961226A158FA00F50488 /* UIWindow+Journey.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE961126A158FA00F50488 /* UIWindow+Journey.swift */; };
+		EBEE961426A15F8000F50488 /* PresentableStore.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE961326A15F8000F50488 /* PresentableStore.swift */; };
 		F617E3991C197D7600B567FB /* UIViewController+Presentation.swift in Sources */ = {isa = PBXBuildFile; fileRef = F617E3981C197D7600B567FB /* UIViewController+Presentation.swift */; };
 		F646BEDB1C85CF5400AA7526 /* Alert.swift in Sources */ = {isa = PBXBuildFile; fileRef = F646BEDA1C85CF5400AA7526 /* Alert.swift */; };
 		F65D5DC11C58C421002B5D95 /* DualNavigationControllersSplitDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = F65D5DC01C58C421002B5D95 /* DualNavigationControllersSplitDelegate.swift */; };
@@ -67,6 +68,7 @@
 		EBEE960D26A0A81200F50488 /* UIViewController+Journey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIViewController+Journey.swift"; sourceTree = "<group>"; };
 		EBEE960F26A156D700F50488 /* GroupJourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GroupJourney.swift; sourceTree = "<group>"; };
 		EBEE961126A158FA00F50488 /* UIWindow+Journey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIWindow+Journey.swift"; sourceTree = "<group>"; };
+		EBEE961326A15F8000F50488 /* PresentableStore.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentableStore.swift; sourceTree = "<group>"; };
 		F617E3751C197D5E00B567FB /* Presentation.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Presentation.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F617E37A1C197D5E00B567FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		F617E3981C197D7600B567FB /* UIViewController+Presentation.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; lineEnding = 0; path = "UIViewController+Presentation.swift"; sourceTree = "<group>"; };
@@ -175,6 +177,7 @@
 				F666095C1F84C9A0004F2055 /* AssociatedValues.swift */,
 				1C0656EA1F8290CB00E60465 /* MemoryUtils.swift */,
 				F617E37A1C197D5E00B567FB /* Info.plist */,
+				EBEE961326A15F8000F50488 /* PresentableStore.swift */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -350,6 +353,7 @@
 				EBEE960626A0A77900F50488 /* JourneyConditional.swift in Sources */,
 				F65D5DC11C58C421002B5D95 /* DualNavigationControllersSplitDelegate.swift in Sources */,
 				F68A43C81C8047DB0097D483 /* UINavigationController+Signals.swift in Sources */,
+				EBEE961426A15F8000F50488 /* PresentableStore.swift in Sources */,
 				EBEE960C26A0A7D600F50488 /* UtilityJournies.swift in Sources */,
 				F6A2D4981EA9DF3B00C93D9A /* Presentation.swift in Sources */,
 				F617E3991C197D7600B567FB /* UIViewController+Presentation.swift in Sources */,

@@ -50,6 +50,8 @@ public protocol Presentable {
     associatedtype Matter
     associatedtype Result
 
+    var storeContainer: PresentableStoreContainer { get }
+
     /// Constructs a matter from `self` and returns it toghether with the result of presenting it.
     func materialize() -> (Matter, Result)
 }
