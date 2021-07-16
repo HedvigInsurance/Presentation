@@ -116,6 +116,7 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
             switch self.storage {
             case let .first(presentation):
                 let presenter = JourneyPresenter<TrueP.P>(
+                    viewController: journeyPresenter.viewController,
                     matter: journeyPresenter.matter.0!,
                     bag: journeyPresenter.bag,
                     dismisser: journeyPresenter.dismisser
@@ -123,6 +124,7 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
                 presentation.configure(presenter)
             case let .second(presentation):
                 let presenter = JourneyPresenter<FalseP.P>(
+                    viewController: journeyPresenter.viewController,
                     matter: journeyPresenter.matter.1!,
                     bag: journeyPresenter.bag,
                     dismisser: journeyPresenter.dismisser

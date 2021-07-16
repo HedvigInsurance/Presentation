@@ -11,12 +11,14 @@ import Flow
 import UIKit
 
 public struct JourneyPresenter<P: Presentable> {
-    public init(matter: P.Matter, bag: DisposeBag, dismisser: @escaping (Error?) -> Void) {
+    public init(viewController: UIViewController, matter: P.Matter, bag: DisposeBag, dismisser: @escaping (Error?) -> Void) {
+        self.viewController = viewController
         self.matter = matter
         self.bag = bag
         self.dismisser = dismisser
     }
     
+    public let viewController: UIViewController
     public let matter: P.Matter
     public let bag: DisposeBag
     public let dismisser: (Error?) -> Void
@@ -128,7 +130,7 @@ public extension JourneyPresentation {
         var new = self
         let oldConfigure = new.configure
         new.configure = { presenter in
-            let newPresenter = JourneyPresenter<P>(matter: presenter.matter, bag: presenter.bag) { error in
+            let newPresenter = JourneyPresenter<P>(viewController: presenter.viewController, matter: presenter.matter, bag: presenter.bag) { error in
                 let error = error as? JourneyError
                 
                 guard error != JourneyError.dismissed else {

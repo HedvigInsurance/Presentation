@@ -71,8 +71,8 @@ extension UIViewController {
             notifyDismissBag.dispose()
         }
                                 
-        present(vc, style: presentation.style, options: presentation.options) { _, bag -> () in
-            presentation.configure(JourneyPresenter(matter: matter, bag: bag, dismisser: { error in
+        present(vc, style: presentation.style, options: presentation.options) { viewController, bag -> () in
+            presentation.configure(JourneyPresenter(viewController: viewController, matter: matter, bag: bag, dismisser: { error in
                 bag.dispose()
                 notifyDismissCallbacker.callAll(with: error)
             }))

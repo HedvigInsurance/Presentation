@@ -32,7 +32,7 @@ extension UIWindow {
         
         let bag = DisposeBag()
         
-        presentation.configure(JourneyPresenter(matter: matter, bag: bag, dismisser: { _ in
+        presentation.configure(JourneyPresenter(viewController: rootViewController!, matter: matter, bag: bag, dismisser: { _ in
             bag.dispose()
         }))
         
