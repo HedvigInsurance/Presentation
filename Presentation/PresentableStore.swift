@@ -18,9 +18,34 @@ public protocol Store {
     var state: ReadWriteSignal<State> { get }
     
     func reduce(_ state: State, _ action: Action) -> State
+    func effects(_ state: State, _ action: Action) -> Future<Action>?
     func send(_ action: Action)
     
     init()
+}
+
+var pointers: [String: UnsafeMutablePointer<Int>] = [:]
+
+extension Store {
+    public static func getKey() -> UnsafeMutablePointer<Int> {
+        let key = String(describing: Self.self)
+        
+        if pointers[key] == nil {
+            pointers[key] = UnsafeMutablePointer<Int>.allocate(capacity: 2)
+        }
+        
+        return pointers[key]!
+    }
+    
+    public func send(_ action: Action) {
+        state.value = reduce(state.value, action)
+        
+        if let effectActionFuture = effects(state.value, action) {
+            effectActionFuture.onValue { action in
+                self.send(action)
+            }
+        }
+    }
 }
 
 public class PresentableStoreContainer: NSObject {

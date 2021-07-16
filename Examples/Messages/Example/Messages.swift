@@ -91,13 +91,7 @@ enum EmbarkAction {
     case updateNumberOfTaps(_ taps: Int)
 }
 
-private var embarkStoreKey = 0
-
 final class EmbarkStore: Store {
-    static func getKey() -> UnsafeMutablePointer<Int> {
-        return withUnsafeMutablePointer(to: &embarkStoreKey, { $0 })
-    }
-    
     var state: ReadWriteSignal<EmbarkState>
     
     func reduce(_ state: EmbarkState, _ action: EmbarkAction) -> EmbarkState {
@@ -109,6 +103,10 @@ final class EmbarkStore: Store {
         }
         
         return newState
+    }
+    
+    func effects(_ state: EmbarkState, _ action: EmbarkAction) -> Future<EmbarkAction>? {
+        nil
     }
     
     init() {
