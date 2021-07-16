@@ -198,7 +198,9 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         self.onDismiss = { _ in }
         self.configure = { _, bag in
             bag += dismissCallbacker.onValue { _ in
-                bag.dispose()
+                if options.contains(.autoPop) {
+                    bag.dispose()
+                }
             }
         }
         self.presentable = presentable
@@ -215,7 +217,10 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
                 
                 bag += future.onResult { result in
                     completion(result)
-                    bag.dispose()
+                    
+                    if options.contains(.autoPop) {
+                        bag.dispose()
+                    }
                 }
                 
                 return bag
@@ -233,8 +238,10 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         var presentBag: DisposeBag? = nil
         
         self.onDismiss = { _ in
-            presentBag?.dispose()
-            presentBag = nil
+            if options.contains(.autoPop) {
+                presentBag?.dispose()
+                presentBag = nil
+            }
         }
         self.configure = { _, bag in
             presentBag = bag
