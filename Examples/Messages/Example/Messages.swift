@@ -171,7 +171,7 @@ struct DisposableEndOfJourney: Presentable {
 }
 
 struct Messages {
-    func createAnotherEmbarkJourney() -> some JourneyPresentation {
+    static func createAnotherEmbarkJourney() -> some JourneyPresentation {
         Journey(Embark(), options: [.defaults]) { numberOfTaps in
             Journey(TestContinue()) { value in
                 Journey(TestContinue()) { value in
@@ -189,14 +189,22 @@ struct Messages {
         }
     }
     
-    func createEmbarkJourney() -> some JourneyPresentation {
+    static func createEmbarkJourney() -> some JourneyPresentation {
         Journey(Embark()) { numberOfTaps in
             Journey(Embark(), options: [.defaults]) { numberOfTaps in
                 Journey(TestContinue()) { value in
                     Journey(TestContinue()) { value in
                         Journey(TestContinue()) { value in
-                            DismissJourney().onPresent {
-                                print("test")
+                            GroupJourney {
+                                if Date() == Date() {
+                                    DismissJourney().onPresent {
+                                        print("test")
+                                    }
+                                } else {
+                                    Journey(TestContinue()).onPresent {
+                                        print("test")
+                                    }
+                                }
                             }
                         }
                     }
@@ -211,7 +219,7 @@ struct Messages {
         }
     }
     
-    var flow: some JourneyPresentation {
+    static var flow: some JourneyPresentation {
         Journey(TestContinue(), style: .modal) { value in
             createEmbarkJourney().onPresent {
                 print("is this called")
@@ -282,9 +290,7 @@ extension Messages: Presentable {
         }
 
         bag += composeButton.onValue {
-            viewController.present(flow).onValue { _ in
-                
-            }
+           
         }
 
         return (split, bag)

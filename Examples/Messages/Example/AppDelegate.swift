@@ -19,7 +19,7 @@ class AppDelegate: UIResponder, UIApplicationDelegate {
         let messages = Messages(messages: testMessages)
 
         let window = UIWindow(frame: UIScreen.main.bounds)
-        bag += window.present(messages, options: .embedInNavigationController)
+        bag += window.present(Messages.flow)
 
         return true
     }
