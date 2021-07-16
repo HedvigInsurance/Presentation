@@ -65,7 +65,7 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
         }
     }
             
-    public var configure: ((TrueP.P.Matter?, FalseP.P.Matter?), DisposeBag) -> ()
+    public var configure: (JourneyPresenter<P>) -> ()
     public var onDismiss: (Error?) -> () {
         get {
             switch self.storage {
@@ -112,12 +112,22 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
             }
         }
         
-        self.configure = { matter, bag in
+        self.configure = { journeyPresenter in
             switch self.storage {
             case let .first(presentation):
-                presentation.configure(matter.0!, bag)
+                let presenter = JourneyPresenter<TrueP.P>(
+                    matter: journeyPresenter.matter.0!,
+                    bag: journeyPresenter.bag,
+                    dismisser: journeyPresenter.dismisser
+                )
+                presentation.configure(presenter)
             case let .second(presentation):
-                presentation.configure(matter.1!, bag)
+                let presenter = JourneyPresenter<FalseP.P>(
+                    matter: journeyPresenter.matter.1!,
+                    bag: journeyPresenter.bag,
+                    dismisser: journeyPresenter.dismisser
+                )
+                presentation.configure(presenter)
             }
         }
     }
@@ -125,14 +135,14 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
   init(first : TrueP)  {
     storage = .first(first)
     self.transform = { $0 }
-    self.configure = { _, _ in }
+    self.configure = { _ in }
     setupDefaults()
   }
     
   init(second : FalseP) {
     storage = .second(second)
     self.transform = { $0 }
-    self.configure = { _, _ in }
+    self.configure = { _ in }
     setupDefaults()
   }
 }

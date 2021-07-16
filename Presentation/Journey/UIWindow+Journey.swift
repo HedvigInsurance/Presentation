@@ -31,8 +31,10 @@ extension UIWindow {
         viewControllerWasPresented(vc)
         
         let bag = DisposeBag()
-                
-        presentation.configure(matter, bag)
+        
+        presentation.configure(JourneyPresenter(matter: matter, bag: bag, dismisser: { _ in
+            bag.dispose()
+        }))
         
         if let transformedResult = transformedResult as? FiniteJourneyResult {
             bag += transformedResult.plainJourneySignal.onValue { _ in }

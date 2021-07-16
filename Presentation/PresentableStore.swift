@@ -24,8 +24,15 @@ public protocol Store {
 }
 
 public class PresentableStoreContainer: NSObject {
-    public func get<S: Store>() -> S? {
-        return associatedValue(forKey: S.getKey())
+    public func get<S: Store>() -> S {
+        if let store: S = associatedValue(forKey: S.getKey()) {
+            return store
+        }
+        
+        let store = S.init()
+        initialize(store)
+        
+        return store
     }
 
     public func initialize<S: Store>(_ store: S) {
@@ -41,14 +48,7 @@ extension Presentable {
         globalPresentableStoreContainer
     }
 
-    public func getStore<S: Store>() -> S {
-        if let store: S = globalPresentableStoreContainer.get() {
-            return store
-        }
-        
-        let store = S.init()
-        globalPresentableStoreContainer.initialize(store)
-        
-        return store
+    public func get<S: Store>() -> S {
+        return storeContainer.get()
     }
 }

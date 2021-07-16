@@ -31,7 +31,7 @@ public struct DismissJourney: JourneyPresentation {
         []
     }
 
-    public var configure: (DismisserPresentable.DismisserViewController, DisposeBag) -> () = { _, _  in }
+    public var configure: (JourneyPresenter<P>) -> () = { _ in }
 
     public var onDismiss: (Error?) -> () = { _ in }
     
@@ -61,7 +61,7 @@ public struct PopJourney: JourneyPresentation {
         []
     }
 
-    public var configure: (PoperPresentable.PoperViewController, DisposeBag) -> () = { _, _  in }
+    public var configure: (JourneyPresenter<P>) -> () = { _ in }
 
     public var onDismiss: (Error?) -> () = { _ in }
     
@@ -91,7 +91,7 @@ public struct ContinueJourney: JourneyPresentation {
         []
     }
 
-    public var configure: (ContinuerPresentable.ContinuerViewController, DisposeBag) -> () = { _, _  in }
+    public var configure: (JourneyPresenter<P>) -> () = { _  in }
 
     public var onDismiss: (Error?) -> () = { _ in }
     

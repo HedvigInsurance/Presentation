@@ -19,7 +19,7 @@ public class GroupJourney<InnerJourney: JourneyPresentation>: JourneyPresentatio
     
     public var transform: (InnerJourney.P.Result) -> InnerJourney.P.Result
     
-    public var configure: (InnerJourney.P.Matter, DisposeBag) -> ()
+    public var configure: (JourneyPresenter<P>) -> ()
     
     public let presentable: InnerJourney.P
     
@@ -28,6 +28,18 @@ public class GroupJourney<InnerJourney: JourneyPresentation>: JourneyPresentatio
     ) {
         let presentation = content()
         
+        self.presentable = presentation.presentable
+        self.style = presentation.style
+        self.options = presentation.options
+        self.transform = presentation.transform
+        self.configure = presentation.configure
+        self.onDismiss = presentation.onDismiss
+    }
+    
+    public init(
+        @JourneyBuilder _ content: @escaping (_ context: PresentableStoreContainer) -> InnerJourney
+    ) {
+        let presentation = content(globalPresentableStoreContainer)
         self.presentable = presentation.presentable
         self.style = presentation.style
         self.options = presentation.options

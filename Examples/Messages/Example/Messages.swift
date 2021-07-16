@@ -128,7 +128,7 @@ struct Embark: Presentable {
         let viewController = UIViewController()
         viewController.title = "Test Continue"
         
-        let embarkStore: EmbarkStore = getStore()
+        let embarkStore: EmbarkStore = get()
 
         let button = UIButton(type: .infoDark)
         viewController.view = button
@@ -145,34 +145,6 @@ struct Embark: Presentable {
             
             return bag
         })
-    }
-}
-
-extension JourneyPresentation {
-    public func withDismissButton() -> some JourneyPresentation {
-        let closeButtonItem = UIBarButtonItem(title: "Close thing", style: .done, target: nil, action: nil)
-
-        var onDismiss: () -> Void = {}
-
-        let newPresentation = addConfiguration { viewController, bag in
-            // move over any barButtonItems to the other side
-            if viewController.navigationItem.rightBarButtonItems != nil {
-                viewController.navigationItem.leftBarButtonItems =
-                    viewController.navigationItem.rightBarButtonItems
-            }
-            
-            bag += closeButtonItem.onValue { _ in
-                onDismiss()
-            }
-
-            viewController.navigationItem.rightBarButtonItem = closeButtonItem
-        }
-        
-        onDismiss = {
-            newPresentation.onDismiss(JourneyError.dismissed)
-        }
-        
-        return newPresentation
     }
 }
 
@@ -213,17 +185,17 @@ struct DisposableEndOfJourney: Presentable {
 
 struct Messages {
     static func createAnotherEmbarkJourney() -> some JourneyPresentation {
-        Journey(Embark(), options: [.defaults]) { numberOfTaps in
-            Journey(TestContinue()) { value in
-                Journey(TestContinue()) { value in
-                    Journey(TestContinue()) { value in
+        Journey(Embark(), options: [.defaults]) { numberOfTaps, context in
+            Journey(TestContinue()) { value, _ in
+                Journey(TestContinue()) { value, _ in
+                    Journey(TestContinue()) { value, _ in
                         DismissJourney().onPresent {
                             print("test")
                         }
                     }
-                }
+                }.cancelJourneyDismiss
             }.onPresent {
-                print("test")
+                dump(context)
             }
         }.onValue { numberOfTaps in
             print(numberOfTaps)
@@ -231,18 +203,16 @@ struct Messages {
     }
     
     static func createEmbarkJourney() -> some JourneyPresentation {
-        Journey(Embark()) { numberOfTaps in
-            Journey(Embark(), options: [.defaults]) { numberOfTaps in
-                Journey(TestContinue()) { value in
+        Journey(Embark()) { numberOfTaps, context in
+            let store: EmbarkStore = context.get()
+            
+            Journey(Embark()) { numberOfTaps, _ in
+                Journey(TestContinue(), style: .modal) { value in
                     Journey(TestContinue()) { value in
-                        Journey(TestContinue()) { value in
+                        Journey(TestContinue(), style: .modal) { value in
                             GroupJourney {
                                 if Date() == Date() {
                                     DismissJourney().onPresent {
-                                        print("test")
-                                    }
-                                } else {
-                                    Journey(TestContinue()).onPresent {
                                         print("test")
                                     }
                                 }
@@ -254,6 +224,8 @@ struct Messages {
                 }
             }.onValue { numberOfTaps in
                 print(numberOfTaps)
+            }.onPresent {
+                print(store)
             }
         }.onValue { numberOfTaps in
             print(numberOfTaps)
@@ -261,13 +233,9 @@ struct Messages {
     }
     
     static var flow: some JourneyPresentation {
-        Journey(TestContinue(), style: .modal) { value in
-            createEmbarkJourney().onPresent {
-                print("is this called")
-            }
-        }.onValue { value in
-            print(value)
-        }
+        Journey(TestContinue(), style: .modal) { value, _ in
+            createEmbarkJourney()
+        }.cancelJourneyDismiss
     }
     
     let messages: ReadSignal<[Message]>

@@ -31,7 +31,7 @@ public enum JourneyError: Error {
     case cancelled
 }
 
-public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIViewController {
+public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIViewController {
     public var onDismiss: (Error?) -> ()
     
     public var style: PresentationStyle
@@ -40,9 +40,67 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
     
     public var transform: (P.Result) -> P.Result
     
-    public var configure: (P.Matter, DisposeBag) -> ()
+    public var configure: (JourneyPresenter<P>) -> ()
     
     public let presentable: P
+    
+    public init<InnerJourney: JourneyPresentation, Value>(
+        _ presentable: P,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.defaults, .autoPop],
+        @JourneyBuilder _ content: @escaping (_ value: P.Result.Value, _ context: PresentableStoreContainer) -> InnerJourney
+    ) where P.Result == CoreSignal<Finite, Value> {
+        self.presentable = presentable
+        self.style = style
+        self.options = options
+        self.transform = { $0 }
+        self.configure = { _ in }
+        self.onDismiss = { _ in }
+        
+        var result: P.Result? = nil
+        
+        self.transform = { signal in
+            result = signal
+            return signal
+        }
+        
+        configure = { presenter in
+            presenter.bag += result?.onError { error in
+                presenter.dismisser(error)
+            }
+            
+            presenter.bag += result?.onError { error in
+                presenter.dismisser(nil)
+            }
+            
+            presenter.bag += result?.onValue { value in
+                let presentation = content(value, presentable.storeContainer)
+                
+                let presentationWithError = presentation.onError { error in
+                    if let error = error as? JourneyError, error == JourneyError.dismissed {
+                        presenter.dismisser(error)
+                    }
+                }
+                
+                let result: JourneyPresentResult<InnerJourney> = presenter.matter.present(presentationWithError)
+                
+                switch result {
+                case let .presented(result):
+                    presenter.bag.hold(result as AnyObject)
+                case .shouldDismiss:
+                    presenter.dismisser(JourneyError.dismissed)
+                case .shouldPop:
+                    break
+                case .shouldContinue:
+                    break
+                }
+            }
+        }
+        
+        onDismiss = { _ in
+            result = nil
+        }
+    }
     
     public init<InnerJourney: JourneyPresentation, Value>(
         _ presentable: P,
@@ -54,57 +112,43 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         self.style = style
         self.options = options
         self.transform = { $0 }
-        self.configure = { _, _ in }
+        self.configure = { _ in }
         self.onDismiss = { _ in }
         
         var result: P.Result? = nil
-        var presentBag: DisposeBag? = nil
         
         self.transform = { signal in
             result = signal
             return signal
         }
         
-        configure = { matter, bag in
-            presentBag = bag
-            
-            bag += result?.onEnd {
-                bag.dispose()
+        configure = { presenter in
+            presenter.bag += result?.onError { error in
+                presenter.dismisser(error)
             }
             
-            bag += result?.onValue { value in
+            presenter.bag += result?.onError { error in
+                presenter.dismisser(nil)
+            }
+            
+            presenter.bag += result?.onValue { value in
                 let presentation = content(value)
-                var innerPresentationBag: DisposeBag? = nil
                 
                 let presentationWithError = presentation.onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed {
-                        if options.contains(.autoPop) {
-                            self.onDismiss(JourneyError.dismissed)
-                        }
-                        
-                        if presentation.options.contains(.autoPop) {
-                            innerPresentationBag?.dispose()
-                        }
+                        presenter.dismisser(error)
                     }
-                }.addConfiguration { _, bag in
-                    innerPresentationBag = bag
                 }
                 
-                let result: JourneyPresentResult<InnerJourney> = matter.present(presentationWithError)
+                let result: JourneyPresentResult<InnerJourney> = presenter.matter.present(presentationWithError)
                 
                 switch result {
                 case let .presented(result):
-                    bag.hold(result as AnyObject)
+                    presenter.bag.hold(result as AnyObject)
                 case .shouldDismiss:
-                    if options.contains(.autoPop) {
-                        self.onDismiss(JourneyError.dismissed)
-                    }
-                    
-                    if presentation.options.contains(.autoPop) {
-                        innerPresentationBag?.dispose()
-                    }
+                    presenter.dismisser(JourneyError.dismissed)
                 case .shouldPop:
-                    innerPresentationBag?.dispose()
+                    break
                 case .shouldContinue:
                     break
                 }
@@ -113,8 +157,56 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         
         onDismiss = { _ in
             result = nil
-            presentBag?.dispose()
-            presentBag = nil
+        }
+    }
+    
+    public init<InnerJourney: JourneyPresentation, Value>(
+        _ presentable: P,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.defaults, .autoPop],
+        @JourneyBuilder _ content: @escaping (_ value: P.Result.Value, _ context: PresentableStoreContainer) -> InnerJourney
+    ) where P.Result == CoreSignal<Plain, Value> {
+        self.presentable = presentable
+        self.style = style
+        self.options = options
+        self.transform = { $0 }
+        self.configure = { _ in }
+        self.onDismiss = { _ in }
+        
+        var result: P.Result? = nil
+        
+        self.transform = { signal in
+            result = signal
+            return signal
+        }
+        
+        configure = { presenter in
+            presenter.bag += result?.onValue { value in
+                let presentation = content(value, presentable.storeContainer)
+                
+                let presentationWithError = presentation.onError { error in
+                    if let error = error as? JourneyError, error == JourneyError.dismissed {
+                        presenter.dismisser(error)
+                    }
+                }
+                
+                let result: JourneyPresentResult<InnerJourney> = presenter.matter.present(presentationWithError)
+                
+                switch result {
+                case let .presented(result):
+                    presenter.bag.hold(result as AnyObject)
+                case .shouldDismiss:
+                    presenter.dismisser(JourneyError.dismissed)
+                case .shouldPop:
+                    break
+                case .shouldContinue:
+                    break
+                }
+            }
+        }
+        
+        onDismiss = { _ in
+            result = nil
         }
     }
     
@@ -128,62 +220,43 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         self.style = style
         self.options = options
         self.transform = { $0 }
-        self.configure = { _, _ in }
+        self.configure = { _ in }
+        self.onDismiss = { _ in }
         
         var result: P.Result? = nil
-        var presentBag: DisposeBag? = nil
-        
-        self.onDismiss = { _ in
-            result = nil
-            presentBag?.dispose()
-            presentBag = nil
-        }
         
         self.transform = { signal in
             result = signal
             return signal
         }
         
-        self.configure = { matter, bag in
-            presentBag = bag
-                        
-            bag += result?.onValue { value in
+        configure = { presenter in
+            presenter.bag += result?.onValue { value in
                 let presentation = content(value)
-                var innerPresentationBag: DisposeBag? = nil
                 
                 let presentationWithError = presentation.onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed {
-                        if options.contains(.autoPop) {
-                            self.onDismiss(JourneyError.dismissed)
-                        }
-                        
-                        if presentation.options.contains(.autoPop) {
-                            innerPresentationBag?.dispose()
-                        }
+                        presenter.dismisser(error)
                     }
-                }.addConfiguration { _, bag in
-                    innerPresentationBag = bag
                 }
                 
-                let result: JourneyPresentResult<InnerJourney> = matter.present(presentationWithError)
+                let result: JourneyPresentResult<InnerJourney> = presenter.matter.present(presentationWithError)
                 
                 switch result {
                 case let .presented(result):
-                    bag.hold(result as AnyObject)
+                    presenter.bag.hold(result as AnyObject)
                 case .shouldDismiss:
-                    if options.contains(.autoPop) {
-                        self.onDismiss(JourneyError.dismissed)
-                    }
-                    
-                    if presentation.options.contains(.autoPop) {
-                        innerPresentationBag?.dispose()
-                    }
+                    presenter.dismisser(JourneyError.dismissed)
                 case .shouldPop:
-                    innerPresentationBag?.dispose()
+                    break
                 case .shouldContinue:
                     break
                 }
             }
+        }
+        
+        onDismiss = { _ in
+            result = nil
         }
     }
     
@@ -192,39 +265,32 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         style: PresentationStyle = .default,
         options: PresentationOptions = [.defaults, .autoPop]
     ) where P.Result == Future<Value> {
-        let dismissCallbacker = Callbacker<Void>()
-        
-        self.transform = { $0 }
-        self.onDismiss = { _ in }
-        self.configure = { _, bag in
-            bag += dismissCallbacker.onValue { _ in
-                if options.contains(.autoPop) {
-                    bag.dispose()
-                }
-            }
-        }
         self.presentable = presentable
         self.style = style
         self.options = options
+        self.transform = { $0 }
+        self.configure = { _ in }
+        self.onDismiss = { _ in }
         
-        self.onDismiss = { _ in
-            dismissCallbacker.callAll()
-        }
+        var result: P.Result? = nil
         
         self.transform = { future in
-            Future { completion in
-                let bag = DisposeBag()
-                
-                bag += future.onResult { result in
-                    completion(result)
-                    
-                    if options.contains(.autoPop) {
-                        bag.dispose()
-                    }
-                }
-                
-                return bag
+            result = future
+            return future
+        }
+        
+        configure = { presenter in
+            result?.onError { error in
+                presenter.dismisser(error)
             }
+            
+            result?.onValue { value in
+                presenter.dismisser(nil)
+            }
+        }
+        
+        onDismiss = { _ in
+            result = nil
         }
     }
     
@@ -232,22 +298,12 @@ public class Journey<P: Presentable>: JourneyPresentation where P.Matter: UIView
         _ presentable: P,
         style: PresentationStyle = .default,
         options: PresentationOptions = [.defaults, .autoPop]
-    ) {
-        self.transform = { $0 }
-        
-        var presentBag: DisposeBag? = nil
-        
-        self.onDismiss = { _ in
-            if options.contains(.autoPop) {
-                presentBag?.dispose()
-                presentBag = nil
-            }
-        }
-        self.configure = { _, bag in
-            presentBag = bag
-        }
+    ) where P.Result == Disposable {
         self.presentable = presentable
         self.style = style
         self.options = options
+        self.transform = { $0 }
+        self.configure = { _ in }
+        self.onDismiss = { _ in }
     }
 }

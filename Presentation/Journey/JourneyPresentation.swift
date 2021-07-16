@@ -10,6 +10,18 @@ import Foundation
 import Flow
 import UIKit
 
+public struct JourneyPresenter<P: Presentable> {
+    public init(matter: P.Matter, bag: DisposeBag, dismisser: @escaping (Error?) -> Void) {
+        self.matter = matter
+        self.bag = bag
+        self.dismisser = dismisser
+    }
+    
+    public let matter: P.Matter
+    public let bag: DisposeBag
+    public let dismisser: (Error?) -> Void
+}
+
 public protocol JourneyPresentation {
     associatedtype P: Presentable
 
@@ -26,7 +38,7 @@ public protocol JourneyPresentation {
     var transform: (P.Result) -> P.Result { get set }
 
     /// The configuration to apply just before presenting `self`.
-    var configure: (P.Matter, DisposeBag) -> () { get set }
+    var configure: (JourneyPresenter<P>) -> () { get set }
 
     /// A callback that will be called once presentaion is done, either with `nil` if normally dismissed, or with an error if not.
     var onDismiss: (Error?) -> () { get set }
@@ -102,13 +114,33 @@ public extension JourneyPresentation {
 
     /// Returns a new JourneyPresentation where `configure` will be called at presentation.
     /// - Note: `self`'s `configure` will still be called before the provided `configure`.
-    func addConfiguration(_ configure: @escaping (UIViewController, DisposeBag) -> ()) -> Self {
+    func addConfiguration(_ configure: @escaping (JourneyPresenter<P>) -> ()) -> Self {
         var new = self
         let oldConfigure = new.configure
-        new.configure = { vc, bag in
-            oldConfigure(vc, bag)
-            configure(unsafeCastToUIViewController(tupleUnnest(vc)), bag)
+        new.configure = { presenter in
+            oldConfigure(presenter)
+            configure(presenter)
         }
+        return new
+    }
+    
+    var cancelJourneyDismiss: Self {
+        var new = self
+        let oldConfigure = new.configure
+        new.configure = { presenter in
+            let newPresenter = JourneyPresenter<P>(matter: presenter.matter, bag: presenter.bag) { error in
+                let error = error as? JourneyError
+                
+                guard error != JourneyError.dismissed else {
+                    return
+                }
+                
+                presenter.dismisser(error)
+            }
+            
+            oldConfigure(newPresenter)
+        }
+        
         return new
     }
 }

@@ -62,9 +62,20 @@ extension UIViewController {
         } else if vc as? ContinuerPresentable.ContinuerViewController != nil {
             return .shouldContinue
         }
-                
+        
+        let notifyDismissBag = DisposeBag()
+        let notifyDismissCallbacker = Callbacker<Error?>()
+        
+        notifyDismissBag += notifyDismissCallbacker.take(first: 1).onValue { error in
+            presentation.onDismiss(error)
+            notifyDismissBag.dispose()
+        }
+                                
         present(vc, style: presentation.style, options: presentation.options) { _, bag -> () in
-            presentation.configure(matter, bag)
+            presentation.configure(JourneyPresenter(matter: matter, bag: bag, dismisser: { error in
+                bag.dispose()
+                notifyDismissCallbacker.callAll(with: error)
+            }))
             
             if let transformedResult = transformedResult as? FiniteJourneyResult {
                 bag += transformedResult.plainJourneySignal.onValue { _ in }
@@ -72,10 +83,10 @@ extension UIViewController {
                 bag += transformedResult.futureJourneyResult.onValue { _ in }
             }
         }.onResult {
-            presentation.onDismiss($0.error)
+            notifyDismissCallbacker.callAll(with: $0.error)
         }
         .onCancel {
-            presentation.onDismiss(JourneyError.cancelled)
+            notifyDismissCallbacker.callAll(with: JourneyError.cancelled)
         }
         
         return .presented(transformedResult)
