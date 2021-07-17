@@ -7,12 +7,11 @@
 //
 
 import Foundation
-import Foundation
 import Flow
 import UIKit
 
-extension UITabBarController {
-    func makeTab<J: JourneyPresentation>(_ presentation: J, dismisser: @escaping (Error?) -> Void) -> (UIViewController, DisposeBag) {
+extension UIViewController {
+    func makeStandalone<J: JourneyPresentation>(_ presentation: J, dismisser: @escaping (Error?) -> Void) -> (UIViewController, DisposeBag) {
         let (matter, result) = presentation.presentable.materialize()
         
         let vc = unsafeCastToUIViewController(tupleUnnest(matter))
@@ -69,7 +68,7 @@ public class TabbedJourney: JourneyPresentation {
         self.presentable = AnyPresentable(materialize: {
             let tabBarController = UITabBarController()
             
-            let (viewController, bag) = tabBarController.makeTab(tab1Presentation, dismisser: { dismisser($0) })
+            let (viewController, bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
             
             tabBarController.viewControllers = [viewController]
             
@@ -101,8 +100,8 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeTab(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeTab(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -142,9 +141,9 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeTab(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeTab(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeTab(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -188,10 +187,10 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeTab(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeTab(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeTab(tab3Presentation, dismisser: { dismisser($0) })
-            let (tab4ViewController, tab4Bag) = tabBarController.makeTab(tab4Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab4ViewController, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -239,11 +238,11 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeTab(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeTab(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeTab(tab3Presentation, dismisser: { dismisser($0) })
-            let (tab4ViewController, tab4Bag) = tabBarController.makeTab(tab4Presentation, dismisser: { dismisser($0) })
-            let (tab5ViewController, tab5Bag) = tabBarController.makeTab(tab5Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab4ViewController, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
+            let (tab5ViewController, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -295,12 +294,12 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeTab(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeTab(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeTab(tab3Presentation, dismisser: { dismisser($0) })
-            let (tab4ViewController, tab4Bag) = tabBarController.makeTab(tab4Presentation, dismisser: { dismisser($0) })
-            let (tab5ViewController, tab5Bag) = tabBarController.makeTab(tab5Presentation, dismisser: { dismisser($0) })
-            let (tab6ViewController, tab6Bag) = tabBarController.makeTab(tab6Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab4ViewController, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
+            let (tab5ViewController, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
+            let (tab6ViewController, tab6Bag) = tabBarController.makeStandalone(tab6Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -356,13 +355,13 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeTab(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeTab(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeTab(tab3Presentation, dismisser: { dismisser($0) })
-            let (tab4ViewController, tab4Bag) = tabBarController.makeTab(tab4Presentation, dismisser: { dismisser($0) })
-            let (tab5ViewController, tab5Bag) = tabBarController.makeTab(tab5Presentation, dismisser: { dismisser($0) })
-            let (tab6ViewController, tab6Bag) = tabBarController.makeTab(tab6Presentation, dismisser: { dismisser($0) })
-            let (tab7ViewController, tab7Bag) = tabBarController.makeTab(tab7Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab4ViewController, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
+            let (tab5ViewController, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
+            let (tab6ViewController, tab6Bag) = tabBarController.makeStandalone(tab6Presentation, dismisser: { dismisser($0) })
+            let (tab7ViewController, tab7Bag) = tabBarController.makeStandalone(tab7Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag

@@ -128,13 +128,18 @@ struct Embark: Presentable {
         
         let embarkStore: EmbarkStore = get()
 
-        let button = UIButton(type: .infoDark)
-        viewController.view = button
+        let leftBarButtonItem = UIBarButtonItem(barButtonSystemItem: .bookmarks, target: nil, action: nil)
+        viewController.navigationItem.leftBarButtonItem = leftBarButtonItem
+        
+        let view = UIView()
+        view.backgroundColor = .red
+        
+        viewController.view = view
         
         let bag = DisposeBag()
         
         return (viewController, FiniteSignal { callback in
-            bag += button.withLatestFrom(embarkStore.atOnce().plain()).onValue({ _, state in
+            bag += leftBarButtonItem.plain().withLatestFrom(embarkStore.atOnce().plain()).onValue({ _, state in
                 let numberOfTaps = state.numberOfTaps + 1
                 embarkStore.send(EmbarkAction.updateNumberOfTaps(numberOfTaps))
                 
@@ -217,56 +222,19 @@ struct Messages {
     
     static var flow: some JourneyPresentation {
         RestorableJourneyPoint(identifier: RestorableJourneyPoints.start) {
-            Journey(TestContinue(), style: .modal) { value, _ in
-                TabbedJourney(
-                    {
-                        createAnotherEmbarkJourney().addConfiguration { presenter in
-                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .bookmarks, tag: 1)
-                        }.cancelJourneyDismiss
-                    },
-                    {
-                        Journey(TestContinue()) { _ in
-                            ContinueJourney()
-                        }.addConfiguration { presenter in
-                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .downloads, tag: 2)
-                        }
-                    },
-                    {
-                        Journey(TestContinue()) { _ in
-                            ContinueJourney()
-                        }.addConfiguration { presenter in
-                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
-                        }
-                    },
-                    {
-                        Journey(TestContinue()) { _ in
-                            ContinueJourney()
-                        }.addConfiguration { presenter in
-                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
-                        }
-                    },
-                    {
-                        Journey(TestContinue()) { _ in
-                            ContinueJourney()
-                        }.addConfiguration { presenter in
-                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
-                        }
-                    },
-                    {
-                        Journey(TestContinue()) { _ in
-                            ContinueJourney()
-                        }.addConfiguration { presenter in
-                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
-                        }
-                    },
-                    {
-                        Journey(TestContinue()) { _ in
-                            ContinueJourney()
-                        }.addConfiguration { presenter in
-                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
+            if #available(iOS 14, *) {
+                SplitViewJourney {
+                    Journey(Messages(messages: testMessages)) { value in
+                        switch value {
+                        case .placeholder:
+                            Journey(TestDisposableResult(), options: [.defaults, .autoPop, .replaceDetail])
+                        case let .show(message):
+                            Journey(MessageDetails(message: message, delete: .init(.init(actions: []))), options: [.defaults, .autoPop, .replaceDetail])
+                        case .compose:
+                            Journey(ComposeMessage(), style: .modal)
                         }
                     }
-                )
+                }
             }
         }.cancelJourneyDismiss
     }
@@ -281,11 +249,14 @@ struct Message: Decodable, Equatable {
     var body: String
 }
 
-extension Messages: Presentable {
-    func materialize() -> (UIViewController, Disposable) {
-        let split = UISplitViewController()
-        split.preferredDisplayMode = UIDevice.current.userInterfaceIdiom == .pad ? .allVisible : .automatic
+enum MessageResult {
+    case show(_ message: Message)
+    case compose
+    case placeholder
+}
 
+extension Messages: Presentable {
+    func materialize() -> (UIViewController, FiniteSignal<MessageResult>) {
         let viewController = UITableViewController()
         viewController.title = "Messages"
 
@@ -304,38 +275,45 @@ extension Messages: Presentable {
 
         bag.hold(dataSource, delegate)
 
-        bag += split.present(viewController, options: [ .defaults, .showInMaster ])
-
         bag += messages.atOnce().onValue {
             dataSource.messages = $0
             viewController.tableView.reloadData()
         }
 
-        let splitDelegate = split.setupSplitDelegate(ownedBy: bag)
-        let selection = MasterDetailSelection(elements: messages, isSame: ==, isCollapsed: splitDelegate.isCollapsed)
+        return (viewController, FiniteSignal<MessageResult> { callback in
+            
+            
+            
+            bag += viewController.view.didMoveToWindowSignal.onValue({ _ in
+                callback(.value(.placeholder))
+                
+                let selection = MasterDetailSelection(elements: messages, isSame: ==, isCollapsed: .init(false))
 
-        bag += selectSignal.onValue { indexPath in
-            selection.select(index: indexPath.row)
-        }
+                bag += selectSignal.onValue { indexPath in
+                    selection.select(index: indexPath.row)
+                }
 
-        bag += selection.presentDetail(on: split) { indexAndElement in
-            if let message = indexAndElement?.element {
-                return DisposablePresentation(self.messageDetails(message))
-            } else {
-                return DisposablePresentation(Empty())
-            }
-        }
+                bag += selection.atOnce().delay(by: 0).onValue { indexAndElement in
+                    guard let index = indexAndElement?.index else { return }
+                    viewController.tableView.selectRow(at: IndexPath(row: index, section: 0), animated: true, scrollPosition: .none)
+                }
 
-        bag += selection.atOnce().delay(by: 0).onValue { indexAndElement in
-            guard let index = indexAndElement?.index else { return }
-            viewController.tableView.selectRow(at: IndexPath(row: index, section: 0), animated: true, scrollPosition: .none)
-        }
+                bag += composeButton.onValue {
+                    callback(.value(.compose))
+                }
+                
+                bag += selection.onValue({ indexAndElement in
+                    if let indexAndElement = indexAndElement {
+                        callback(.value(.show(indexAndElement.element)))
+                    }
+                })
 
-        bag += composeButton.onValue {
-           
-        }
-
-        return (split, bag)
+            })
+            
+            
+            
+            return bag
+        })
     }
 }
 

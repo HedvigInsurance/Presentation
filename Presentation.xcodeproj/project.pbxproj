@@ -14,6 +14,7 @@
 		722FE3B622EA357A00EB04A7 /* CustomAdaptivePresentationDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722FE3B522EA357A00EB04A7 /* CustomAdaptivePresentationDelegate.swift */; };
 		728711A2229818B700A086DF /* PresentationEvent.swift in Sources */ = {isa = PBXBuildFile; fileRef = 728711A1229818B700A086DF /* PresentationEvent.swift */; };
 		EB216B5626A2FBC500CBE7F8 /* TabbedJourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB216B5526A2FBC500CBE7F8 /* TabbedJourney.swift */; };
+		EB2B1AFB26A31082005EC422 /* SplitViewJourney.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB2B1AFA26A31082005EC422 /* SplitViewJourney.swift */; };
 		EB3F6D7825A44ABF009C95C2 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = EB3F6D7725A44ABF009C95C2 /* Flow */; };
 		EBDCE30B269DC2F2004977CD /* Journey.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDCE30A269DC2F2004977CD /* Journey.swift */; };
 		EBEE960626A0A77900F50488 /* JourneyConditional.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960526A0A77900F50488 /* JourneyConditional.swift */; };
@@ -63,6 +64,7 @@
 		722FE3B522EA357A00EB04A7 /* CustomAdaptivePresentationDelegate.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = CustomAdaptivePresentationDelegate.swift; sourceTree = "<group>"; };
 		728711A1229818B700A086DF /* PresentationEvent.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PresentationEvent.swift; sourceTree = "<group>"; };
 		EB216B5526A2FBC500CBE7F8 /* TabbedJourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TabbedJourney.swift; sourceTree = "<group>"; };
+		EB2B1AFA26A31082005EC422 /* SplitViewJourney.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SplitViewJourney.swift; sourceTree = "<group>"; };
 		EBDCE30A269DC2F2004977CD /* Journey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Journey.swift; sourceTree = "<group>"; };
 		EBEE960526A0A77900F50488 /* JourneyConditional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyConditional.swift; sourceTree = "<group>"; };
 		EBEE960726A0A79700F50488 /* JourneyBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyBuilder.swift; sourceTree = "<group>"; };
@@ -133,6 +135,7 @@
 				EBEE961126A158FA00F50488 /* UIWindow+Journey.swift */,
 				EBF95D6A26A2DE3000FE9293 /* RestorableJourneyPoint.swift */,
 				EB216B5526A2FBC500CBE7F8 /* TabbedJourney.swift */,
+				EB2B1AFA26A31082005EC422 /* SplitViewJourney.swift */,
 			);
 			path = Journey;
 			sourceTree = "<group>";
@@ -371,6 +374,7 @@
 				722FE3B622EA357A00EB04A7 /* CustomAdaptivePresentationDelegate.swift in Sources */,
 				F68AF6061F30AB6F009C28A9 /* MasterDetailSelection.swift in Sources */,
 				1C0656EB1F8290CB00E60465 /* MemoryUtils.swift in Sources */,
+				EB2B1AFB26A31082005EC422 /* SplitViewJourney.swift in Sources */,
 				F6B3B6FC1F398E1B00188409 /* KeepSelection.swift in Sources */,
 				F6EA2D251E72D73B0054C302 /* DismissInstallable.swift in Sources */,
 				728711A2229818B700A086DF /* PresentationEvent.swift in Sources */,

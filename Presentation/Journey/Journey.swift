@@ -58,6 +58,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
         self.onDismiss = { _ in }
         
         var result: P.Result? = nil
+        var previousPresenter: JourneyPresenter<InnerJourney.P>? = nil
         
         self.transform = { signal in
             result = signal
@@ -76,9 +77,17 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
             presenter.bag += result?.onValue { value in
                 let presentation = content(value, presentable.storeContainer)
                 
+                if presentation.options.contains(.replaceDetail) {
+                    previousPresenter?.bag.dispose()
+                }
+                
                 let presentationWithError = presentation.onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed {
                         presenter.dismisser(error)
+                    }
+                }.addConfiguration { presenter in
+                    if presentation.options.contains(.replaceDetail) {
+                        previousPresenter = presenter
                     }
                 }
                 
@@ -99,6 +108,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
         
         onDismiss = { _ in
             result = nil
+            previousPresenter = nil
         }
     }
     
@@ -116,6 +126,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
         self.onDismiss = { _ in }
         
         var result: P.Result? = nil
+        var previousPresenter: JourneyPresenter<InnerJourney.P>? = nil
         
         self.transform = { signal in
             result = signal
@@ -134,9 +145,17 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
             presenter.bag += result?.onValue { value in
                 let presentation = content(value)
                 
+                if presentation.options.contains(.replaceDetail) {
+                    previousPresenter?.bag.dispose()
+                }
+                
                 let presentationWithError = presentation.onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed {
                         presenter.dismisser(error)
+                    }
+                }.addConfiguration { presenter in
+                    if presentation.options.contains(.replaceDetail) {
+                        previousPresenter = presenter
                     }
                 }
                 
@@ -157,6 +176,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
         
         onDismiss = { _ in
             result = nil
+            previousPresenter = nil
         }
     }
     
@@ -174,6 +194,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
         self.onDismiss = { _ in }
         
         var result: P.Result? = nil
+        var previousPresenter: JourneyPresenter<InnerJourney.P>? = nil
         
         self.transform = { signal in
             result = signal
@@ -184,9 +205,17 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
             presenter.bag += result?.onValue { value in
                 let presentation = content(value, presentable.storeContainer)
                 
+                if presentation.options.contains(.replaceDetail) {
+                    previousPresenter?.bag.dispose()
+                }
+                
                 let presentationWithError = presentation.onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed {
                         presenter.dismisser(error)
+                    }
+                }.addConfiguration { presenter in
+                    if presentation.options.contains(.replaceDetail) {
+                        previousPresenter = presenter
                     }
                 }
                 
@@ -207,6 +236,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
         
         onDismiss = { _ in
             result = nil
+            previousPresenter = nil
         }
     }
     
@@ -224,6 +254,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
         self.onDismiss = { _ in }
         
         var result: P.Result? = nil
+        var previousPresenter: JourneyPresenter<InnerJourney.P>? = nil
         
         self.transform = { signal in
             result = signal
@@ -234,9 +265,17 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
             presenter.bag += result?.onValue { value in
                 let presentation = content(value)
                 
+                if presentation.options.contains(.replaceDetail) {
+                    previousPresenter?.bag.dispose()
+                }
+                
                 let presentationWithError = presentation.onError { error in
                     if let error = error as? JourneyError, error == JourneyError.dismissed {
                         presenter.dismisser(error)
+                    }
+                }.addConfiguration { presenter in
+                    if presentation.options.contains(.replaceDetail) {
+                        previousPresenter = presenter
                     }
                 }
                 
@@ -257,6 +296,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
         
         onDismiss = { _ in
             result = nil
+            previousPresenter = nil
         }
     }
     

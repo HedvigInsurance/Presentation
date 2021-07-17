@@ -31,6 +31,9 @@ public extension PresentationOptions {
 
     /// Present self in the master view if the presenting controller has a master and detail view such as the split controller.
     static let showInMaster = PresentationOptions()
+    
+    /// Replaces previous detail in a Journey
+    static let replaceDetail = PresentationOptions()
 
     /// Allow tapping outside the presented view controller to dismiss the presentation.
     static let tapOutsideToDismiss = PresentationOptions()
