@@ -9,13 +9,14 @@
 import Foundation
 import Flow
 
-public protocol Store {
+public protocol Store: SignalProvider {
     associatedtype State
     associatedtype Action
     
     static func getKey() -> UnsafeMutablePointer<Int>
     
-    var state: ReadWriteSignal<State> { get }
+    var providedSignal: ReadWriteSignal<State> { get }
+    var onAction: Callbacker<Action> { get }
     
     func reduce(_ state: State, _ action: Action) -> State
     func effects(_ state: State, _ action: Action) -> Future<Action>?
@@ -38,9 +39,23 @@ extension Store {
     }
     
     public func send(_ action: Action) {
-        state.value = reduce(state.value, action)
+        #if DEBUG
         
-        if let effectActionFuture = effects(state.value, action) {
+        print("🦄 \(String(describing: Self.self)): sending \(action)")
+        
+        #endif
+        
+        providedSignal.value = reduce(providedSignal.value, action)
+        onAction.callAll(with: action)
+        
+        #if DEBUG
+        
+        print("🦄 \(String(describing: Self.self)): new state")
+        dump(providedSignal.value)
+        
+        #endif
+        
+        if let effectActionFuture = effects(providedSignal.value, action) {
             effectActionFuture.onValue { action in
                 self.send(action)
             }

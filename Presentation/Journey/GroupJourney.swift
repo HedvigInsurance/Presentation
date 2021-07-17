@@ -40,6 +40,7 @@ public class GroupJourney<InnerJourney: JourneyPresentation>: JourneyPresentatio
         @JourneyBuilder _ content: @escaping (_ context: PresentableStoreContainer) -> InnerJourney
     ) {
         let presentation = content(globalPresentableStoreContainer)
+
         self.presentable = presentation.presentable
         self.style = presentation.style
         self.options = presentation.options

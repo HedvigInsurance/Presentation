@@ -92,8 +92,10 @@ enum EmbarkAction {
 }
 
 final class EmbarkStore: Store {
-    var state: ReadWriteSignal<EmbarkState>
+    let providedSignal: ReadWriteSignal<EmbarkState>
     
+    let onAction = Callbacker<EmbarkAction>()
+        
     func reduce(_ state: EmbarkState, _ action: EmbarkAction) -> EmbarkState {
         var newState = state
         
@@ -110,13 +112,9 @@ final class EmbarkStore: Store {
     }
     
     init() {
-        self.state = ReadWriteSignal(
+        self.providedSignal = ReadWriteSignal(
             EmbarkState(numberOfTaps: 0)
         )
-    }
-
-    func send(_ action: EmbarkAction) {
-        state.value = reduce(state.value, action)
     }
 }
 
@@ -134,7 +132,7 @@ struct Embark: Presentable {
         let bag = DisposeBag()
         
         return (viewController, FiniteSignal { callback in
-            bag += button.withLatestFrom(embarkStore.state.atOnce().plain()).onValue({ _, state in
+            bag += button.withLatestFrom(embarkStore.atOnce().plain()).onValue({ _, state in
                 let numberOfTaps = state.numberOfTaps + 1
                 embarkStore.send(EmbarkAction.updateNumberOfTaps(numberOfTaps))
                 
@@ -227,6 +225,10 @@ struct Messages {
             }
         }.onValue { numberOfTaps in
             print(numberOfTaps)
+        }.onStore(EmbarkStore.self) { (action: EmbarkAction) in
+            if case .updateNumberOfTaps = action {
+                PopJourney()
+            }
         }
     }
     

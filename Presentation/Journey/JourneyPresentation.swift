@@ -126,6 +126,32 @@ public extension JourneyPresentation {
         return new
     }
     
+    /// Returns a new JourneyPresentation where the JourneyBuilder closure gets called every time a store emits an action
+    /// which results in that journey being presented
+    func onStore<S: Store, InnerJourney: JourneyPresentation>(
+        _ storeType: S.Type,
+        @JourneyBuilder _ onAction: @escaping (_ action: S.Action) -> InnerJourney
+    ) -> Self {
+        addConfiguration { presenter in
+            let store: S = self.presentable.get()
+            
+            presenter.bag += store.onAction.onValue { action in
+                let result: JourneyPresentResult<InnerJourney> = presenter.viewController.present(onAction(action))
+                
+                switch result {
+                case let .presented(result):
+                    presenter.bag.hold(result as AnyObject)
+                case .shouldDismiss:
+                    presenter.dismisser(JourneyError.dismissed)
+                case .shouldPop:
+                    presenter.dismisser(JourneyError.cancelled)
+                case .shouldContinue:
+                    break
+                }
+            }
+        }
+    }
+    
     var cancelJourneyDismiss: Self {
         var new = self
         let oldConfigure = new.configure

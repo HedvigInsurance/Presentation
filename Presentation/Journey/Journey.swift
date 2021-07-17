@@ -198,7 +198,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
                 case .shouldDismiss:
                     presenter.dismisser(JourneyError.dismissed)
                 case .shouldPop:
-                    break
+                    presenter.dismisser(JourneyError.cancelled)
                 case .shouldContinue:
                     break
                 }
@@ -248,7 +248,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
                 case .shouldDismiss:
                     presenter.dismisser(JourneyError.dismissed)
                 case .shouldPop:
-                    break
+                    presenter.dismisser(JourneyError.cancelled)
                 case .shouldContinue:
                     break
                 }
