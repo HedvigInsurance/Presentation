@@ -83,7 +83,7 @@ struct TestFutureResult: Presentable {
     }
 }
 
-struct EmbarkState {
+struct EmbarkState: Codable {
     var numberOfTaps: Int = 0
 }
 
@@ -112,9 +112,11 @@ final class EmbarkStore: Store {
     }
     
     init() {
-        self.providedSignal = ReadWriteSignal(
-            EmbarkState(numberOfTaps: 0)
-        )
+        if let stored = Self.restore() {
+            providedSignal = ReadWriteSignal(stored)
+        } else {
+            providedSignal = ReadWriteSignal(State())
+        }
     }
 }
 
@@ -179,22 +181,29 @@ struct DisposableEndOfJourney: Presentable {
     }
 }
 
+enum RestorableJourneyPoints: String, RestorableJourneyPointIdentifier {
+    case start = "start"
+    case createAnotherEmbarkJourney = "createAnotherEmbarkJourney"
+}
+
 struct Messages {
     static func createAnotherEmbarkJourney() -> some JourneyPresentation {
-        Journey(Embark(), options: [.defaults]) { numberOfTaps, context in
-            Journey(TestContinue()) { value, _ in
+        RestorableJourneyPoint(identifier: RestorableJourneyPoints.createAnotherEmbarkJourney) {
+            Journey(Embark()) { numberOfTaps, context in
                 Journey(TestContinue()) { value, _ in
                     Journey(TestContinue()) { value, _ in
-                        DismissJourney().onPresent {
-                            print("test")
+                        Journey(TestContinue()) { value, _ in
+                            DismissJourney().onPresent {
+                                print("test")
+                            }
                         }
                     }
-                }.cancelJourneyDismiss
-            }.onPresent {
-                dump(context)
+                }.onPresent {
+                    dump(context)
+                }
+            }.onValue { numberOfTaps in
+                print(numberOfTaps)
             }
-        }.onValue { numberOfTaps in
-            print(numberOfTaps)
         }
     }
     
@@ -203,21 +212,7 @@ struct Messages {
             let store: EmbarkStore = context.get()
             
             Journey(Embark()) { numberOfTaps, _ in
-                Journey(TestContinue(), style: .modal) { value in
-                    Journey(TestContinue()) { value in
-                        Journey(TestContinue(), style: .modal) { value in
-                            GroupJourney {
-                                if Date() == Date() {
-                                    DismissJourney().onPresent {
-                                        print("test")
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }.onPresent {
-                    print("test")
-                }
+                createAnotherEmbarkJourney()
             }.onValue { numberOfTaps in
                 print(numberOfTaps)
             }.onPresent {
@@ -225,16 +220,14 @@ struct Messages {
             }
         }.onValue { numberOfTaps in
             print(numberOfTaps)
-        }.onStore(EmbarkStore.self) { (action: EmbarkAction) in
-            if case .updateNumberOfTaps = action {
-                PopJourney()
-            }
         }
     }
     
     static var flow: some JourneyPresentation {
-        Journey(TestContinue(), style: .modal) { value, _ in
-            createEmbarkJourney()
+        RestorableJourneyPoint(identifier: RestorableJourneyPoints.start) {
+            Journey(TestContinue(), style: .modal) { value, _ in
+                createEmbarkJourney()
+            }
         }.cancelJourneyDismiss
     }
     

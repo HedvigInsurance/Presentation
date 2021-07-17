@@ -10,7 +10,7 @@ import Foundation
 import Flow
 
 public protocol Store: SignalProvider {
-    associatedtype State
+    associatedtype State: Codable
     associatedtype Action
     
     static func getKey() -> UnsafeMutablePointer<Int>
@@ -38,6 +38,42 @@ extension Store {
         return pointers[key]!
     }
     
+    private static var documentsDirectory: URL {
+        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
+        let documentsDirectory = paths[0]
+        return documentsDirectory
+    }
+    
+    private static var persistenceURL: URL {
+        let docURL = documentsDirectory
+        return docURL.appendingPathComponent(String(describing: Self.self))
+    }
+    
+    public static func persist(_ value: State) {
+        let encoder = JSONEncoder()
+        if let encoded = try? encoder.encode(value) {
+            do {
+                try encoded.write(to: persistenceURL)
+            } catch {
+                print("Couldn't write to save file: " + error.localizedDescription)
+            }
+        }
+    }
+    
+    public static func restore() -> State? {
+        guard let codedData = try? Data(contentsOf: persistenceURL) else {
+            return nil
+        }
+
+        let decoder = JSONDecoder()
+        
+        if let decoded = try? decoder.decode(State.self, from: codedData) {
+            return decoded
+        }
+        
+        return nil
+    }
+    
     public func send(_ action: Action) {
         #if DEBUG
         
@@ -47,6 +83,10 @@ extension Store {
         
         providedSignal.value = reduce(providedSignal.value, action)
         onAction.callAll(with: action)
+        
+        DispatchQueue.global(qos: .background).async {
+            Self.persist(providedSignal.value)
+        }
         
         #if DEBUG
         

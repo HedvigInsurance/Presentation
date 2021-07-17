@@ -14,14 +14,14 @@ import Presentation
 @UIApplicationMain
 class AppDelegate: UIResponder, UIApplicationDelegate {
     let bag = DisposeBag()
+    
 
     func application(_ application: UIApplication, willFinishLaunchingWithOptions launchOptions: [UIApplicationLaunchOptionsKey: Any]?) -> Bool {
-        let messages = Messages(messages: testMessages)
-        
-        let window = UIWindow(frame: UIScreen.main.bounds)
-        bag += window.present(Messages.flow)
-
         return true
+    }
+    
+    func application(_ application: UIApplication, configurationForConnecting connectingSceneSession: UISceneSession, options: UIScene.ConnectionOptions) -> UISceneConfiguration {
+        return connectingSceneSession.configuration
     }
 }
 

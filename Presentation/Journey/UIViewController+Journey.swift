@@ -70,6 +70,7 @@ extension UIViewController {
             presentation.onDismiss(error)
             notifyDismissBag.dispose()
         }
+        
                                 
         present(vc, style: presentation.style, options: presentation.options) { viewController, bag -> () in
             presentation.configure(JourneyPresenter(viewController: viewController, matter: matter, bag: bag, dismisser: { error in

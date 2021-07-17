@@ -3,12 +3,13 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 50;
+	objectVersion = 51;
 	objects = {
 
 /* Begin PBXBuildFile section */
 		722481CE20D161C20038787C /* ExampleUITests.swift in Sources */ = {isa = PBXBuildFile; fileRef = 722481CD20D161C20038787C /* ExampleUITests.swift */; };
 		CB042928E96704435A091101 /* Pods_Example.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = F31C07FA4151F36ED1EF5B17 /* Pods_Example.framework */; };
+		EBF95D6926A2B84800FE9293 /* SceneDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBF95D6826A2B84800FE9293 /* SceneDelegate.swift */; };
 		F61928ED2088DE200008F713 /* Messages.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61928EC2088DE200008F713 /* Messages.swift */; };
 		F61928EF2088DE7E0008F713 /* ComposeMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61928EE2088DE7E0008F713 /* ComposeMessage.swift */; };
 		F61928F12088DEBD0008F713 /* MessageDetails.swift in Sources */ = {isa = PBXBuildFile; fileRef = F61928F02088DEBD0008F713 /* MessageDetails.swift */; };
@@ -45,6 +46,7 @@
 		722481CD20D161C20038787C /* ExampleUITests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExampleUITests.swift; sourceTree = "<group>"; };
 		722481CF20D161C20038787C /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		87B49720B691378FFB795176 /* Pods-Example.release.xcconfig */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = text.xcconfig; name = "Pods-Example.release.xcconfig"; path = "Target Support Files/Pods-Example/Pods-Example.release.xcconfig"; sourceTree = "<group>"; };
+		EBF95D6826A2B84800FE9293 /* SceneDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SceneDelegate.swift; sourceTree = "<group>"; };
 		F31C07FA4151F36ED1EF5B17 /* Pods_Example.framework */ = {isa = PBXFileReference; explicitFileType = wrapper.framework; includeInIndex = 0; path = Pods_Example.framework; sourceTree = BUILT_PRODUCTS_DIR; };
 		F61928EC2088DE200008F713 /* Messages.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Messages.swift; sourceTree = "<group>"; };
 		F61928EE2088DE7E0008F713 /* ComposeMessage.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ComposeMessage.swift; sourceTree = "<group>"; };
@@ -89,7 +91,6 @@
 				3B47B57F001AB956AD9D00AD /* Pods-Example.debug.xcconfig */,
 				87B49720B691378FFB795176 /* Pods-Example.release.xcconfig */,
 			);
-			name = Pods;
 			path = Pods;
 			sourceTree = "<group>";
 		};
@@ -130,6 +131,7 @@
 				F61928EE2088DE7E0008F713 /* ComposeMessage.swift */,
 				F6B3E0612086211100F55C53 /* LaunchScreen.storyboard */,
 				F6B3E0642086211100F55C53 /* Info.plist */,
+				EBF95D6826A2B84800FE9293 /* SceneDelegate.swift */,
 			);
 			path = Example;
 			sourceTree = "<group>";
@@ -286,6 +288,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				EBF95D6926A2B84800FE9293 /* SceneDelegate.swift in Sources */,
 				F61928ED2088DE200008F713 /* Messages.swift in Sources */,
 				F61928EF2088DE7E0008F713 /* ComposeMessage.swift in Sources */,
 				F61928F12088DEBD0008F713 /* MessageDetails.swift in Sources */,
@@ -472,6 +475,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = Example/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
@@ -490,6 +494,7 @@
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				CODE_SIGN_STYLE = Automatic;
 				INFOPLIST_FILE = Example/Info.plist;
+				IPHONEOS_DEPLOYMENT_TARGET = 13.0;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
