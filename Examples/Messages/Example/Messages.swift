@@ -209,15 +209,7 @@ struct Messages {
     
     static func createEmbarkJourney() -> some JourneyPresentation {
         Journey(Embark()) { numberOfTaps, context in
-            let store: EmbarkStore = context.get()
-            
-            Journey(Embark()) { numberOfTaps, _ in
-                createAnotherEmbarkJourney()
-            }.onValue { numberOfTaps in
-                print(numberOfTaps)
-            }.onPresent {
-                print(store)
-            }
+            ContinueJourney()
         }.onValue { numberOfTaps in
             print(numberOfTaps)
         }
@@ -226,7 +218,55 @@ struct Messages {
     static var flow: some JourneyPresentation {
         RestorableJourneyPoint(identifier: RestorableJourneyPoints.start) {
             Journey(TestContinue(), style: .modal) { value, _ in
-                createEmbarkJourney()
+                TabbedJourney(
+                    {
+                        createAnotherEmbarkJourney().addConfiguration { presenter in
+                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .bookmarks, tag: 1)
+                        }.cancelJourneyDismiss
+                    },
+                    {
+                        Journey(TestContinue()) { _ in
+                            ContinueJourney()
+                        }.addConfiguration { presenter in
+                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .downloads, tag: 2)
+                        }
+                    },
+                    {
+                        Journey(TestContinue()) { _ in
+                            ContinueJourney()
+                        }.addConfiguration { presenter in
+                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
+                        }
+                    },
+                    {
+                        Journey(TestContinue()) { _ in
+                            ContinueJourney()
+                        }.addConfiguration { presenter in
+                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
+                        }
+                    },
+                    {
+                        Journey(TestContinue()) { _ in
+                            ContinueJourney()
+                        }.addConfiguration { presenter in
+                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
+                        }
+                    },
+                    {
+                        Journey(TestContinue()) { _ in
+                            ContinueJourney()
+                        }.addConfiguration { presenter in
+                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
+                        }
+                    },
+                    {
+                        Journey(TestContinue()) { _ in
+                            ContinueJourney()
+                        }.addConfiguration { presenter in
+                            presenter.viewController.tabBarItem = UITabBarItem(tabBarSystemItem: .featured, tag: 2)
+                        }
+                    }
+                )
             }
         }.cancelJourneyDismiss
     }
