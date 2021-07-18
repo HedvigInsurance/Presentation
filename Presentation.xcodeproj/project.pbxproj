@@ -19,6 +19,8 @@
 		EB2B1B0026A3446A005EC422 /* UIView+AddPresentable.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB2B1AFF26A3446A005EC422 /* UIView+AddPresentable.swift */; };
 		EB2B1B0226A34480005EC422 /* Presentable+ViewModifiers.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB2B1B0126A34480005EC422 /* Presentable+ViewModifiers.swift */; };
 		EB3F6D7825A44ABF009C95C2 /* Flow in Frameworks */ = {isa = PBXBuildFile; productRef = EB3F6D7725A44ABF009C95C2 /* Flow */; };
+		EB56CAAA26A42466005E870F /* Swifter in Frameworks */ = {isa = PBXBuildFile; productRef = EB56CAA926A42466005E870F /* Swifter */; };
+		EB56CAAC26A42479005E870F /* PresentableStoreDebugger.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB56CAAB26A42479005E870F /* PresentableStoreDebugger.swift */; };
 		EBDCE30B269DC2F2004977CD /* Journey.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBDCE30A269DC2F2004977CD /* Journey.swift */; };
 		EBEE960626A0A77900F50488 /* JourneyConditional.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960526A0A77900F50488 /* JourneyConditional.swift */; };
 		EBEE960826A0A79700F50488 /* JourneyBuilder.swift in Sources */ = {isa = PBXBuildFile; fileRef = EBEE960726A0A79700F50488 /* JourneyBuilder.swift */; };
@@ -71,6 +73,7 @@
 		EB2B1AFD26A34265005EC422 /* PresentableViewBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentableViewBuilder.swift; sourceTree = "<group>"; };
 		EB2B1AFF26A3446A005EC422 /* UIView+AddPresentable.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "UIView+AddPresentable.swift"; sourceTree = "<group>"; };
 		EB2B1B0126A34480005EC422 /* Presentable+ViewModifiers.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "Presentable+ViewModifiers.swift"; sourceTree = "<group>"; };
+		EB56CAAB26A42479005E870F /* PresentableStoreDebugger.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PresentableStoreDebugger.swift; sourceTree = "<group>"; };
 		EBDCE30A269DC2F2004977CD /* Journey.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Journey.swift; sourceTree = "<group>"; };
 		EBEE960526A0A77900F50488 /* JourneyConditional.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyConditional.swift; sourceTree = "<group>"; };
 		EBEE960726A0A79700F50488 /* JourneyBuilder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = JourneyBuilder.swift; sourceTree = "<group>"; };
@@ -114,6 +117,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				EB3F6D7825A44ABF009C95C2 /* Flow in Frameworks */,
+				EB56CAAA26A42466005E870F /* Swifter in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -204,6 +208,7 @@
 				1C0656EA1F8290CB00E60465 /* MemoryUtils.swift */,
 				F617E37A1C197D5E00B567FB /* Info.plist */,
 				EBEE961326A15F8000F50488 /* PresentableStore.swift */,
+				EB56CAAB26A42479005E870F /* PresentableStoreDebugger.swift */,
 			);
 			path = Presentation;
 			sourceTree = "<group>";
@@ -250,6 +255,7 @@
 			name = Presentation;
 			packageProductDependencies = (
 				EB3F6D7725A44ABF009C95C2 /* Flow */,
+				EB56CAA926A42466005E870F /* Swifter */,
 			);
 			productName = Presentation;
 			productReference = F617E3751C197D5E00B567FB /* Presentation.framework */;
@@ -308,6 +314,7 @@
 			mainGroup = F617E36B1C197D5E00B567FB;
 			packageReferences = (
 				EB3F6D7625A44ABF009C95C2 /* XCRemoteSwiftPackageReference "Flow" */,
+				EB56CAA826A42466005E870F /* XCRemoteSwiftPackageReference "swifter" */,
 			);
 			productRefGroup = F617E3761C197D5E00B567FB /* Products */;
 			projectDirPath = "";
@@ -400,6 +407,7 @@
 				728711A2229818B700A086DF /* PresentationEvent.swift in Sources */,
 				F66292A0206911BA00DDE0DF /* UISplitViewController+Presenting.swift in Sources */,
 				EBEE961226A158FA00F50488 /* UIWindow+Journey.swift in Sources */,
+				EB56CAAC26A42479005E870F /* PresentableStoreDebugger.swift in Sources */,
 				EBEE960E26A0A81200F50488 /* UIViewController+Journey.swift in Sources */,
 				F666095F1F84C9A0004F2055 /* AssociatedValues.swift in Sources */,
 				EBF95D6B26A2DE3000FE9293 /* RestorableJourneyPoint.swift in Sources */,
@@ -687,6 +695,14 @@
 				kind = branch;
 			};
 		};
+		EB56CAA826A42466005E870F /* XCRemoteSwiftPackageReference "swifter" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/httpswift/swifter.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 1.5.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -694,6 +710,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = EB3F6D7625A44ABF009C95C2 /* XCRemoteSwiftPackageReference "Flow" */;
 			productName = Flow;
+		};
+		EB56CAA926A42466005E870F /* Swifter */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = EB56CAA826A42466005E870F /* XCRemoteSwiftPackageReference "swifter" */;
+			productName = Swifter;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

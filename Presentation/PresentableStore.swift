@@ -11,7 +11,7 @@ import Flow
 
 public protocol Store: SignalProvider {
     associatedtype State: Codable
-    associatedtype Action
+    associatedtype Action: Codable
     
     static func getKey() -> UnsafeMutablePointer<Int>
     
@@ -48,7 +48,7 @@ extension Store {
         let docURL = documentsDirectory
         return docURL.appendingPathComponent(String(describing: Self.self))
     }
-    
+
     public static func persist(_ value: State) {
         let encoder = JSONEncoder()
         if let encoded = try? encoder.encode(value) {
@@ -59,14 +59,14 @@ extension Store {
             }
         }
     }
-    
+
     public static func restore() -> State? {
         guard let codedData = try? Data(contentsOf: persistenceURL) else {
             return nil
         }
 
         let decoder = JSONDecoder()
-        
+
         if let decoded = try? decoder.decode(State.self, from: codedData) {
             return decoded
         }
@@ -74,9 +74,15 @@ extension Store {
         return nil
     }
     
+    /// Deletes all persisted instances of the Store
+    public static func destroy() {
+        try? FileManager.default.removeItem(at: persistenceURL)
+    }
+
+    /// Sends an action to the store, which is then reduced to produce a new state
     public func send(_ action: Action) {
         #if DEBUG
-        
+
         print("🦄 \(String(describing: Self.self)): sending \(action)")
         
         #endif
@@ -101,6 +107,13 @@ extension Store {
             }
         }
     }
+    
+    /// Reduce to an action in another store, useful to sync between two stores
+    public func reduce<S: Store>(to store: S, reducer: @escaping (_ action: Action) -> S.Action) -> Disposable {
+        onAction.onValue { action in
+            store.send(reducer(action))
+        }
+    }
 }
 
 public class PresentableStoreContainer: NSObject {
@@ -117,7 +130,15 @@ public class PresentableStoreContainer: NSObject {
 
     public func initialize<S: Store>(_ store: S) {
        setAssociatedValue(store, forKey: S.getKey())
+        debugger.registerStore(store)
     }
+    
+    public override init() {
+        super.init()
+        debugger.startServer()
+    }
+    
+    let debugger = PresentableStoreDebugger()
 }
 
 /// Set this to automatically populate all presentables with your global PresentableStoreContainer

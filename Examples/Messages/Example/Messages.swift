@@ -83,12 +83,17 @@ struct TestFutureResult: Presentable {
     }
 }
 
-struct EmbarkState: Codable {
+public struct EmbarkState: Codable {
     var numberOfTaps: Int = 0
 }
 
-enum EmbarkAction {
-    case updateNumberOfTaps(_ taps: Int)
+public struct Fish: Codable {
+    var numberOfTaps: Int = 0
+}
+
+public enum EmbarkAction: Codable {
+    case updateNumberOfTaps(taps: Int)
+    case updateNumberOfFish(taps: Fish, something: Fish)
 }
 
 final class EmbarkStore: Store {
@@ -102,6 +107,8 @@ final class EmbarkStore: Store {
         switch action {
             case let .updateNumberOfTaps(taps):
                 newState.numberOfTaps = taps
+        default:
+            break
         }
         
         return newState
@@ -139,9 +146,14 @@ struct Embark: Presentable {
         let bag = DisposeBag()
         
         return (viewController, FiniteSignal { callback in
+            
+            bag += embarkStore.atOnce().onValue { state in
+                viewController.title = String(state.numberOfTaps)
+            }
+            
             bag += leftBarButtonItem.plain().withLatestFrom(embarkStore.atOnce().plain()).onValue({ _, state in
                 let numberOfTaps = state.numberOfTaps + 1
-                embarkStore.send(EmbarkAction.updateNumberOfTaps(numberOfTaps))
+                embarkStore.send(EmbarkAction.updateNumberOfTaps(taps: numberOfTaps))
                 
                 callback(.value(numberOfTaps))
             })
@@ -238,16 +250,7 @@ struct Messages {
         RestorableJourneyPoint(identifier: RestorableJourneyPoints.start) {
             if #available(iOS 14, *) {
                 SplitViewJourney {
-                    Journey(Messages(messages: testMessages)) { value in
-                        switch value {
-                        case .placeholder:
-                            Journey(TestDisposableResult(), options: [.defaults, .autoPop, .replaceDetail])
-                        case let .show(message):
-                            Journey(MessageDetails(message: message, delete: .init(.init(actions: []))), options: [.defaults, .autoPop, .replaceDetail])
-                        case .compose:
-                            Journey(ComposeMessage(), style: .modal)
-                        }
-                    }
+                    createEmbarkJourney()
                 }
             }
         }.cancelJourneyDismiss

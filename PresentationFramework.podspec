@@ -12,6 +12,8 @@ Pod::Spec.new do |s|
 
   s.ios.deployment_target = "9.0"
   s.dependency 'FlowFramework', '>= 1.8.4'
+  s.dependency 'Swifter', '~> 1.5.0'
+  s.dependency 'Runtime', '2.2.2'
 
   s.source       = { :git => "https://github.com/iZettle/Presentation.git", :tag => "#{s.version}" }
   s.source_files = "Presentation/**/*.{swift}"
