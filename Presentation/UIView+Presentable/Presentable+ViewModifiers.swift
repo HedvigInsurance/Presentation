@@ -8,6 +8,7 @@
 
 import Foundation
 import Flow
+import UIKit
 
 extension Presentable where Matter: UIView {
     public func onValue<Kind, Value>(_ callback: @escaping (Value) -> Void) -> AnyPresentable<UIView, DisposeBag> where Result == CoreSignal<Kind, Value> {
