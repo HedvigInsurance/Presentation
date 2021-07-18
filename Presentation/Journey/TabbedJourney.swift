@@ -59,7 +59,9 @@ public class TabbedJourney: JourneyPresentation {
     public let presentable: AnyPresentable<UITabBarController, Disposable>
     
     public init<Tab1: JourneyPresentation>(
-        @JourneyBuilder _ tab1: @escaping () -> Tab1
+        @JourneyBuilder _ tab1: @escaping () -> Tab1,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.autoPop]
     ) {
         let tab1Presentation = tab1()
         
@@ -75,9 +77,9 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.autoPop]
+        self.options = options
         self.onDismiss = { _ in }
-        self.style = .default
+        self.style = style
         self.configure = { presenter in
             dismisser = { error in
                 presenter.dismisser(error)
@@ -88,7 +90,9 @@ public class TabbedJourney: JourneyPresentation {
     
     public init<Tab1: JourneyPresentation, Tab2: JourneyPresentation>(
         @JourneyBuilder _ tab1: @escaping () -> Tab1,
-        @JourneyBuilder _ tab2: @escaping () -> Tab2
+        @JourneyBuilder _ tab2: @escaping () -> Tab2,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.autoPop]
     ) {
         let tab1Presentation = tab1()
         let tab2Presentation = tab2()
@@ -114,9 +118,9 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.autoPop]
+        self.options = options
         self.onDismiss = { _ in }
-        self.style = .default
+        self.style = style
         self.configure = { presenter in
             dismisser = { error in
                 presenter.dismisser(error)
@@ -128,7 +132,9 @@ public class TabbedJourney: JourneyPresentation {
     public init<Tab1: JourneyPresentation, Tab2: JourneyPresentation, Tab3: JourneyPresentation>(
         @JourneyBuilder _ tab1: @escaping () -> Tab1,
         @JourneyBuilder _ tab2: @escaping () -> Tab2,
-        @JourneyBuilder _ tab3: @escaping () -> Tab3
+        @JourneyBuilder _ tab3: @escaping () -> Tab3,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.autoPop]
     ) {
         let tab1Presentation = tab1()
         let tab2Presentation = tab2()
@@ -158,9 +164,9 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.autoPop]
+        self.options = options
         self.onDismiss = { _ in }
-        self.style = .default
+        self.style = style
         self.configure = { presenter in
             dismisser = { error in
                 presenter.dismisser(error)
@@ -173,7 +179,9 @@ public class TabbedJourney: JourneyPresentation {
         @JourneyBuilder _ tab1: @escaping () -> Tab1,
         @JourneyBuilder _ tab2: @escaping () -> Tab2,
         @JourneyBuilder _ tab3: @escaping () -> Tab3,
-        @JourneyBuilder _ tab4: @escaping () -> Tab4
+        @JourneyBuilder _ tab4: @escaping () -> Tab4,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.autoPop]
     ) {
         let tab1Presentation = tab1()
         let tab2Presentation = tab2()
@@ -207,9 +215,9 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.autoPop]
+        self.options = options
         self.onDismiss = { _ in }
-        self.style = .default
+        self.style = style
         self.configure = { presenter in
             dismisser = { error in
                 presenter.dismisser(error)
@@ -223,7 +231,9 @@ public class TabbedJourney: JourneyPresentation {
         @JourneyBuilder _ tab2: @escaping () -> Tab2,
         @JourneyBuilder _ tab3: @escaping () -> Tab3,
         @JourneyBuilder _ tab4: @escaping () -> Tab4,
-        @JourneyBuilder _ tab5: @escaping () -> Tab5
+        @JourneyBuilder _ tab5: @escaping () -> Tab5,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.autoPop]
     ) {
         let tab1Presentation = tab1()
         let tab2Presentation = tab2()
@@ -261,9 +271,9 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.autoPop]
+        self.options = options
         self.onDismiss = { _ in }
-        self.style = .default
+        self.style = style
         self.configure = { presenter in
             dismisser = { error in
                 presenter.dismisser(error)
@@ -278,7 +288,9 @@ public class TabbedJourney: JourneyPresentation {
         @JourneyBuilder _ tab3: @escaping () -> Tab3,
         @JourneyBuilder _ tab4: @escaping () -> Tab4,
         @JourneyBuilder _ tab5: @escaping () -> Tab5,
-        @JourneyBuilder _ tab6: @escaping () -> Tab6
+        @JourneyBuilder _ tab6: @escaping () -> Tab6,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.autoPop]
     ) {
         let tab1Presentation = tab1()
         let tab2Presentation = tab2()
@@ -320,9 +332,9 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.autoPop]
+        self.options = options
         self.onDismiss = { _ in }
-        self.style = .default
+        self.style = style
         self.configure = { presenter in
             dismisser = { error in
                 presenter.dismisser(error)
@@ -338,7 +350,9 @@ public class TabbedJourney: JourneyPresentation {
         @JourneyBuilder _ tab4: @escaping () -> Tab4,
         @JourneyBuilder _ tab5: @escaping () -> Tab5,
         @JourneyBuilder _ tab6: @escaping () -> Tab6,
-        @JourneyBuilder _ tab7: @escaping () -> Tab7
+        @JourneyBuilder _ tab7: @escaping () -> Tab7,
+        style: PresentationStyle = .default,
+        options: PresentationOptions = [.autoPop]
     ) {
         let tab1Presentation = tab1()
         let tab2Presentation = tab2()
@@ -384,9 +398,9 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.autoPop]
+        self.options = options
         self.onDismiss = { _ in }
-        self.style = .default
+        self.style = style
         self.configure = { presenter in
             dismisser = { error in
                 presenter.dismisser(error)
