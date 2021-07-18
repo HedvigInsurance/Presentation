@@ -72,7 +72,7 @@ public class TabbedJourney: JourneyPresentation {
             
             let (viewController, bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
             
-            tabBarController.viewControllers = [viewController]
+            tabBarController.viewControllers = [viewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             return (tabBarController, bag)
         })
@@ -110,7 +110,7 @@ public class TabbedJourney: JourneyPresentation {
             bag += tab1Bag
             bag += tab2Bag
             
-            tabBarController.viewControllers = [tab1ViewController, tab2ViewController]
+            tabBarController.viewControllers = [tab1ViewController, tab2ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
             viewControllerWasPresented(tab2ViewController)
@@ -155,7 +155,7 @@ public class TabbedJourney: JourneyPresentation {
             bag += tab2Bag
             bag += tab3Bag
             
-            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController]
+            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
             viewControllerWasPresented(tab2ViewController)
@@ -205,7 +205,7 @@ public class TabbedJourney: JourneyPresentation {
             bag += tab3Bag
             bag += tab4Bag
             
-            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController]
+            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
             viewControllerWasPresented(tab2ViewController)
@@ -260,7 +260,7 @@ public class TabbedJourney: JourneyPresentation {
             bag += tab4Bag
             bag += tab5Bag
             
-            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController]
+            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
             viewControllerWasPresented(tab2ViewController)
@@ -320,7 +320,7 @@ public class TabbedJourney: JourneyPresentation {
             bag += tab5Bag
             bag += tab6Bag
             
-            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController, tab6ViewController]
+            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController, tab6ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
             viewControllerWasPresented(tab2ViewController)
@@ -385,7 +385,7 @@ public class TabbedJourney: JourneyPresentation {
             bag += tab6Bag
             bag += tab7Bag
             
-            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController, tab6ViewController, tab7ViewController]
+            tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController, tab6ViewController, tab7ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
             viewControllerWasPresented(tab2ViewController)
