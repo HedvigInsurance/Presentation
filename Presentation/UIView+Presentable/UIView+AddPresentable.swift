@@ -8,6 +8,7 @@
 
 import Foundation
 import Flow
+import UIKit
 
 extension UIView {
     public func addSubviews(@PresentableViewBuilder _ builder: () -> [(UIView, Disposable)]) -> Disposable {
