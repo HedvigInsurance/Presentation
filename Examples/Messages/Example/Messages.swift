@@ -186,6 +186,20 @@ struct DisposableEndOfJourney: Presentable {
     }
 }
 
+struct ViewJourney: Presentable {
+    func materialize() -> (UIView, Disposable) {
+        let stackView = UIStackView()
+        let bag = DisposeBag()
+        
+        
+        return (stackView, stackView.didLayout {
+                
+        }.didMoveToSuperview {
+            
+        }.hold(bag))
+    }
+}
+
 enum RestorableJourneyPoints: String, RestorableJourneyPointIdentifier {
     case start = "start"
     case createAnotherEmbarkJourney = "createAnotherEmbarkJourney"

@@ -75,7 +75,7 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.defaults, .autoPop]
+        self.options = [.autoPop]
         self.onDismiss = { _ in }
         self.style = .default
         self.configure = { presenter in
@@ -114,7 +114,7 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.defaults, .autoPop]
+        self.options = [.autoPop]
         self.onDismiss = { _ in }
         self.style = .default
         self.configure = { presenter in
@@ -158,7 +158,7 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.defaults, .autoPop]
+        self.options = [.autoPop]
         self.onDismiss = { _ in }
         self.style = .default
         self.configure = { presenter in
@@ -207,7 +207,7 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.defaults, .autoPop]
+        self.options = [.autoPop]
         self.onDismiss = { _ in }
         self.style = .default
         self.configure = { presenter in
@@ -261,7 +261,7 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.defaults, .autoPop]
+        self.options = [.autoPop]
         self.onDismiss = { _ in }
         self.style = .default
         self.configure = { presenter in
@@ -320,7 +320,7 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.defaults, .autoPop]
+        self.options = [.autoPop]
         self.onDismiss = { _ in }
         self.style = .default
         self.configure = { presenter in
@@ -384,7 +384,7 @@ public class TabbedJourney: JourneyPresentation {
             return (tabBarController, bag)
         })
 
-        self.options = [.defaults, .autoPop]
+        self.options = [.autoPop]
         self.onDismiss = { _ in }
         self.style = .default
         self.configure = { presenter in

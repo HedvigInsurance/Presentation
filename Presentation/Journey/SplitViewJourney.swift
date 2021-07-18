@@ -43,7 +43,7 @@ public class SplitViewJourney: JourneyPresentation {
             return (splitViewController, bag)
         })
 
-        self.options = [.defaults, .autoPop]
+        self.options = [.autoPop]
         self.onDismiss = { _ in }
         self.style = .default
         self.configure = { presenter in
