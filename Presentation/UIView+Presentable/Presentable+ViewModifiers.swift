@@ -54,7 +54,11 @@ protocol ViewLifecycle {
     func didMoveToSuperview(_ callback: @escaping () -> Void) -> ViewAndDisposable<View>
 }
 
-public struct ViewAndDisposable<View: UIView>: ViewLifecycle {
+public struct ViewAndDisposable<View: UIView>: ViewLifecycle, Disposable {
+    public func dispose() {
+        disposable.dispose()
+    }
+    
     let view: View
     let disposable: Disposable
     
