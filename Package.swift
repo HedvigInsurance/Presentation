@@ -12,14 +12,32 @@ let package = Package(
         .library(
             name: "Presentation",
             targets: ["Presentation"]),
+        .library(
+            name: "PresentationDebugSupport",
+            targets: ["PresentationDebugSupport"]
+        ),
     ],
     dependencies: [
         .package(url: "https://github.com/hedviginsurance/Flow", .branch("master")),
+        .package(url: "https://github.com/httpswift/swifter", .exact("1.5.0")),
+        .package(url: "https://github.com/wickwirew/Runtime", .exact("2.2.2")),
     ],
     targets: [
         .target(
             name: "Presentation",
-            dependencies: ["Flow"],
-            path: "Presentation")
+            dependencies: [
+                .product(name: "Flow", package: "Flow")
+            ],
+            path: "Presentation"),
+        .target(
+            name: "PresentationDebugSupport",
+            dependencies: [
+                "Flow",
+                "Presentation",
+                "Runtime",
+                .product(name: "Swifter", package: "swifter")
+            ],
+            path: "PresentationDebugSupport"
+        )
     ]
 )

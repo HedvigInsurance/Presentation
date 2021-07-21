@@ -179,6 +179,7 @@ internal extension PresentationOptions {
     }
 }
 
+@available(iOSApplicationExtension, unavailable)
 extension UIResponder {
     @nonobjc var firstResponder: UIResponder? {
         // Send a message will a nil responder will walk the responder chain an call findFirstResponder on responders that participate in the responder chain. If the participant is not the firstResponder continue with its children if the participant is a view.

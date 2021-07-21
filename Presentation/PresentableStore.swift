@@ -9,17 +9,85 @@
 import Foundation
 import Flow
 
-public protocol Store: SignalProvider {
+public protocol EmptyInitable {
+    init()
+}
+
+open class StateStore<State: Codable & EmptyInitable, Action: Codable>: Store {
+    let stateWriteSignal: CoreSignal<ReadWrite, State>
+    let actionCallbacker = Callbacker<Action>()
+    
+    public var state: State {
+        stateWriteSignal.value
+    }
+    
+    public var stateSignal: CoreSignal<Read, State> {
+        stateWriteSignal.readOnly()
+    }
+    
+    public var actionSignal: CoreSignal<Plain, Action> {
+        actionCallbacker.providedSignal
+    }
+    
+    open func effects(_ getState: () -> State, _ action: Action) -> Future<Action>? {
+        fatalError("Must be overrided by subclass")
+    }
+    
+    open func reduce(_ state: State, _ action: Action) -> State {
+        fatalError("Must be overrided by subclass")
+    }
+    
+    /// Sends an action to the store, which is then reduced to produce a new state
+    public func send(_ action: Action) {
+        #if DEBUG
+
+        print("🦄 \(String(describing: Self.self)): sending \(action)")
+        
+        #endif
+        
+        stateWriteSignal.value = reduce(stateSignal.value, action)
+        actionCallbacker.callAll(with: action)
+        
+        DispatchQueue.global(qos: .background).async {
+            Self.persist(self.stateSignal.value)
+        }
+        
+        #if DEBUG
+        
+        print("🦄 \(String(describing: Self.self)): new state")
+        dump(stateSignal.value)
+        
+        #endif
+        
+        if let effectActionFuture = effects({
+            stateSignal.value
+        }, action) {
+            effectActionFuture.onValue { action in
+                self.send(action)
+            }
+        }
+    }
+    
+    public required init() {
+        if let stored = Self.restore() {
+            self.stateWriteSignal = ReadWriteSignal(stored)
+        } else {
+            self.stateWriteSignal = ReadWriteSignal(State())
+        }
+    }
+}
+
+public protocol Store {
     associatedtype State: Codable
     associatedtype Action: Codable
     
     static func getKey() -> UnsafeMutablePointer<Int>
     
-    var providedSignal: ReadWriteSignal<State> { get }
-    var onAction: Callbacker<Action> { get }
-    
+    var stateSignal: CoreSignal<Read, State> { get }
+    var actionSignal: CoreSignal<Plain, Action> { get }
+            
     func reduce(_ state: State, _ action: Action) -> State
-    func effects(_ state: State, _ action: Action) -> Future<Action>?
+    func effects(_ getState: () -> State, _ action: Action) -> Future<Action>?
     func send(_ action: Action)
     
     init()
@@ -38,13 +106,13 @@ extension Store {
         return pointers[key]!
     }
     
-    private static var documentsDirectory: URL {
+    static var documentsDirectory: URL {
         let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
         let documentsDirectory = paths[0]
         return documentsDirectory
     }
     
-    private static var persistenceURL: URL {
+    static var persistenceURL: URL {
         let docURL = documentsDirectory
         return docURL.appendingPathComponent(String(describing: Self.self))
     }
@@ -59,7 +127,7 @@ extension Store {
             }
         }
     }
-
+    
     public static func restore() -> State? {
         guard let codedData = try? Data(contentsOf: persistenceURL) else {
             return nil
@@ -78,42 +146,18 @@ extension Store {
     public static func destroy() {
         try? FileManager.default.removeItem(at: persistenceURL)
     }
-
-    /// Sends an action to the store, which is then reduced to produce a new state
-    public func send(_ action: Action) {
-        #if DEBUG
-
-        print("🦄 \(String(describing: Self.self)): sending \(action)")
-        
-        #endif
-        
-        providedSignal.value = reduce(providedSignal.value, action)
-        onAction.callAll(with: action)
-        
-        DispatchQueue.global(qos: .background).async {
-            Self.persist(providedSignal.value)
-        }
-        
-        #if DEBUG
-        
-        print("🦄 \(String(describing: Self.self)): new state")
-        dump(providedSignal.value)
-        
-        #endif
-        
-        if let effectActionFuture = effects(providedSignal.value, action) {
-            effectActionFuture.onValue { action in
-                self.send(action)
-            }
-        }
-    }
     
     /// Reduce to an action in another store, useful to sync between two stores
-    public func reduce<S: Store>(to store: S, reducer: @escaping (_ action: Action) -> S.Action) -> Disposable {
-        onAction.onValue { action in
-            store.send(reducer(action))
+    public func reduce<S: Store>(to store: S, reducer: @escaping (_ action: Action, _ state: State) -> S.Action) -> Disposable {
+        actionSignal.onValue { action in
+            store.send(reducer(action, stateSignal.value))
         }
     }
+}
+
+public protocol Debugger {
+    func startServer()
+    func registerStore<S: Store>(_ store: S)
 }
 
 public class PresentableStoreContainer: NSObject {
@@ -130,15 +174,15 @@ public class PresentableStoreContainer: NSObject {
 
     public func initialize<S: Store>(_ store: S) {
        setAssociatedValue(store, forKey: S.getKey())
-        debugger.registerStore(store)
+        Self.debugger?.registerStore(store)
     }
     
     public override init() {
         super.init()
-        debugger.startServer()
+        Self.debugger?.startServer()
     }
     
-    let debugger = PresentableStoreDebugger()
+    static var debugger: Debugger? = nil
 }
 
 /// Set this to automatically populate all presentables with your global PresentableStoreContainer

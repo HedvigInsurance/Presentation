@@ -135,7 +135,7 @@ public extension JourneyPresentation {
         addConfiguration { presenter in
             let store: S = self.presentable.get()
             
-            presenter.bag += store.onAction.onValue { action in
+            presenter.bag += store.actionSignal.onValue { action in
                 let result: JourneyPresentResult<InnerJourney> = presenter.viewController.present(onAction(action))
                 
                 switch result {

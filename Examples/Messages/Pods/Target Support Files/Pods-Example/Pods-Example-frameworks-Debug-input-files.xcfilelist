@@ -1,5 +1,0 @@
-${PODS_ROOT}/Target Support Files/Pods-Example/Pods-Example-frameworks.sh
-${BUILT_PRODUCTS_DIR}/FlowFramework/Flow.framework
-${BUILT_PRODUCTS_DIR}/PresentationFramework/Presentation.framework
-${BUILT_PRODUCTS_DIR}/Runtime/Runtime.framework
-${BUILT_PRODUCTS_DIR}/Swifter/Swifter.framework

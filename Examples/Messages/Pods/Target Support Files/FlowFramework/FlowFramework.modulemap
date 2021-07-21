@@ -1,6 +1,0 @@
-framework module Flow {
-  umbrella header "FlowFramework-umbrella.h"
-
-  export *
-  module * { export * }
-}

@@ -10,6 +10,7 @@ import Foundation
 import Swifter
 import Flow
 import Runtime
+import Presentation
 
 struct StoreDebuggerRepresentationActionInput: Codable {
     let type: String
@@ -36,7 +37,7 @@ struct StateWebsocketResponse: Codable {
     var state: String
 }
 
-class PresentableStoreDebugger {
+class PresentableStoreDebugger: Debugger {
     let bag = DisposeBag()
     
     init() {}
@@ -44,6 +45,8 @@ class PresentableStoreDebugger {
     var websocketSessions: [WebSocketSession] = []
     var decodeAndSenders: [String: (Data) -> Void] = [:]
     var container = StoreDebuggerContainer()
+    
+    var actionHistory: [String: [Any]] = [:]
     
     let websocketConnect = Callbacker<Void>()
     
@@ -61,7 +64,14 @@ class PresentableStoreDebugger {
         container.stores.append(StoreDebuggerRepresentation(
             name: String(describing: store),
             actions: actionInfo.cases.map { action in
-                let payloadTypeInfo = try! typeInfo(of: action.payloadType!)
+                guard let payloadType = action.payloadType else {
+                    return StoreDebuggerRepresentationAction(
+                        name: action.name,
+                        inputs: []
+                    )
+                }
+                
+                let payloadTypeInfo = try! typeInfo(of: payloadType)
                 
                 func mapPropertiesToInput(_ properties: [Runtime.PropertyInfo]) -> [StoreDebuggerRepresentationActionInput] {
                     properties.compactMap { property in
@@ -84,9 +94,9 @@ class PresentableStoreDebugger {
             }
         ))
         
-        bag += merge(store.providedSignal.plain(), websocketConnect.map { _ in store.providedSignal.value }.plain()).onValue({ value in
+        bag += merge(store.stateSignal.plain(), websocketConnect.map { _ in store.stateSignal.value }.plain()).onValue({ value in
             self.websocketSessions.forEach { session in
-                guard let data = try? JSONEncoder().encode(store.providedSignal.value), let jsonString = String(data: data, encoding: .utf8) else {
+                guard let data = try? JSONEncoder().encode(store.stateSignal.value), let jsonString = String(data: data, encoding: .utf8) else {
                     return
                 }
                 
@@ -102,6 +112,19 @@ class PresentableStoreDebugger {
                 session.writeText(jsonString)
             }
         })
+        
+        let storeName = String(describing: store)
+        
+        bag += store.actionSignal.onValue { action in
+            let json = try? JSONEncoder().encode(action)
+            let any = try! JSONSerialization.jsonObject(with: json!, options: [])
+            
+            if let actionHistoryArray = self.actionHistory[storeName] {
+                self.actionHistory[storeName] = [actionHistoryArray, [[String(Date().timeIntervalSince1970): any]]].flatMap { $0 }
+            } else {
+                self.actionHistory[storeName] = [[String(Date().timeIntervalSince1970): any]]
+            }
+        }
     }
     
     let server = HttpServer()
@@ -110,6 +133,11 @@ class PresentableStoreDebugger {
         server["/stores"] = { request in
             let encoded = try! JSONEncoder().encode(self.container)
             return HttpResponse.ok(.data(encoded, contentType: "application/json"))
+        }
+        
+        server["/history"] = { request in
+            let history = try! JSONSerialization.data(withJSONObject: ["history": self.actionHistory], options: [])
+            return HttpResponse.ok(.data(history, contentType: "application/json"))
         }
         
         server["/state"] = websocket(text: nil, binary: nil, pong: { session, _ in

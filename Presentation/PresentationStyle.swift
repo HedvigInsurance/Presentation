@@ -257,6 +257,7 @@ extension UIView {
 }
 
 private extension PresentationStyle {
+    @available(iOSApplicationExtension, unavailable)
     static func popover(from source: Either<UIView, UIBarButtonItem>, permittedDirections: UIPopoverArrowDirection) -> PresentationStyle {
         return PresentationStyle(name: "popover") { viewcontroller, from, options in
             let vc = viewcontroller.embededInNavigationController(options)

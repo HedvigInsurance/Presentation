@@ -6,8 +6,26 @@
         "repositoryURL": "https://github.com/hedviginsurance/Flow",
         "state": {
           "branch": "master",
-          "revision": "ae8293bdd84c56680ac52e0fbb89a8add69bae4f",
+          "revision": "6dd955328903594a978aee1fe9d549a92e818aaf",
           "version": null
+        }
+      },
+      {
+        "package": "Runtime",
+        "repositoryURL": "https://github.com/wickwirew/Runtime",
+        "state": {
+          "branch": null,
+          "revision": "a848b81e1a0100801f572e5273ffe4352fd54088",
+          "version": "2.2.2"
+        }
+      },
+      {
+        "package": "swifter",
+        "repositoryURL": "https://github.com/httpswift/swifter",
+        "state": {
+          "branch": null,
+          "revision": "9483a5d459b45c3ffd059f7b55f9638e268632fd",
+          "version": "1.5.0"
         }
       }
     ]
