@@ -182,7 +182,6 @@ public class PresentableStoreContainer: NSObject {
     
     public override init() {
         super.init()
-        Self.debugger?.startServer()
     }
     
     public static var debugger: Debugger? = nil

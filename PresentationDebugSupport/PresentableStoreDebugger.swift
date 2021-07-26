@@ -37,10 +37,10 @@ struct StateWebsocketResponse: Codable {
     var state: String
 }
 
-class PresentableStoreDebugger: Debugger {
+public class PresentableStoreDebugger: Debugger {
     let bag = DisposeBag()
     
-    init() {}
+    public init() {}
     
     var websocketSessions: [WebSocketSession] = []
     var decodeAndSenders: [String: (Data) -> Void] = [:]
@@ -50,7 +50,7 @@ class PresentableStoreDebugger: Debugger {
     
     let websocketConnect = Callbacker<Void>()
     
-    func registerStore<S: Store>(_ store: S) {
+    public func registerStore<S: Store>(_ store: S) {
         let actionInfo = try! typeInfo(of: S.Action.self)
         
         decodeAndSenders[String(describing: store)] = { data in
@@ -129,7 +129,7 @@ class PresentableStoreDebugger: Debugger {
     
     let server = HttpServer()
     
-    func startServer() {
+    public func startServer() {
         server["/stores"] = { request in
             let encoded = try! JSONEncoder().encode(self.container)
             return HttpResponse.ok(.data(encoded, contentType: "application/json"))
