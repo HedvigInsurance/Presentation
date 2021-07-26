@@ -19,7 +19,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/hedviginsurance/Flow", .branch("master")),
-        .package(url: "https://github.com/httpswift/swifter", .exact("1.5.0")),
+        .package(url: "https://github.com/httpswift/Swifter", .exact("1.5.0")),
         .package(url: "https://github.com/wickwirew/Runtime", .exact("2.2.2")),
     ],
     targets: [
@@ -34,7 +34,7 @@ let package = Package(
             dependencies: [
                 "Presentation",
                 .product(name: "Runtime", package: "Runtime"),
-                .product(name: "Swifter", package: "swifter")
+                .product(name: "Swifter", package: "Swifter")
             ],
             path: "PresentationDebugSupport"
         )

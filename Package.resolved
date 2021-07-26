@@ -20,8 +20,8 @@
         }
       },
       {
-        "package": "swifter",
-        "repositoryURL": "https://github.com/httpswift/swifter",
+        "package": "Swifter",
+        "repositoryURL": "https://github.com/httpswift/Swifter",
         "state": {
           "branch": null,
           "revision": "9483a5d459b45c3ffd059f7b55f9638e268632fd",
