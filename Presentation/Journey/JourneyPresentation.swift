@@ -161,7 +161,7 @@ public extension JourneyPresentation {
             let store: S = self.presentable.get()
             
             presenter.bag += store.actionSignal.onValue { action in
-                onAction(action)
+                onAction(action, presenter)
             }
         }
     }
