@@ -152,6 +152,20 @@ public extension JourneyPresentation {
         }
     }
     
+    /// Returns a new JourneyPresentation where the closure gets called every time a store emits an action
+    func onAction<S: Store>(
+        _ storeType: S.Type,
+        _ onAction: @escaping (_ action: S.Action) -> Void
+    ) -> Self {
+        addConfiguration { presenter in
+            let store: S = self.presentable.get()
+            
+            presenter.bag += store.actionSignal.onValue { action in
+                onAction(action)
+            }
+        }
+    }
+    
     /// Returns a new JourneyPresentation where the JourneyBuilder closure gets called every time a store results a new state
     /// which results in that journey being presented
     func onState<S: Store, InnerJourney: JourneyPresentation>(
@@ -179,7 +193,7 @@ public extension JourneyPresentation {
     }
     
     /// Returns a new JourneyPresentation where the closure gets called each time the state changes
-    func onStateChange<S: Store>(
+    func onState<S: Store>(
         _ storeType: S.Type,
         _ onState: @escaping (_ state: S.State, _ presenter: JourneyPresenter<Self.P>) -> Void
     ) -> Self {
