@@ -32,9 +32,9 @@ let package = Package(
         .target(
             name: "PresentationDebugSupport",
             dependencies: [
-                "Flow",
+                .product(name: "Flow", package: "Flow"),
                 "Presentation",
-                "Runtime",
+                .product(name: "Runtime", package: "Runtime"),
                 .product(name: "Swifter", package: "swifter")
             ],
             path: "PresentationDebugSupport"
