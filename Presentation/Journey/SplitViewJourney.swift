@@ -32,13 +32,14 @@ public class SplitViewJourney: JourneyPresentation {
         self.presentable = AnyPresentable(materialize: {
             let splitViewController = UISplitViewController()
             
-            let (primaryViewController, primaryBag) = splitViewController.makeStandalone(primaryPresentation, dismisser: { dismisser($0) })
+            let (primaryViewController, configurer, primaryBag) = splitViewController.makeStandalone(primaryPresentation, dismisser: { dismisser($0) })
             
             let bag = DisposeBag()
             
             bag += primaryBag
             
             splitViewController.viewControllers = [primaryViewController]
+            configurer()
             
             return (splitViewController, bag)
         })

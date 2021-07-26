@@ -128,7 +128,7 @@ public extension JourneyPresentation {
     
     /// Returns a new JourneyPresentation where the JourneyBuilder closure gets called every time a store emits an action
     /// which results in that journey being presented
-    func onStore<S: Store, InnerJourney: JourneyPresentation>(
+    func onAction<S: Store, InnerJourney: JourneyPresentation>(
         _ storeType: S.Type,
         @JourneyBuilder _ onAction: @escaping (_ action: S.Action) -> InnerJourney
     ) -> Self {
@@ -148,6 +148,46 @@ public extension JourneyPresentation {
                 case .shouldContinue:
                     break
                 }
+            }
+        }
+    }
+    
+    /// Returns a new JourneyPresentation where the JourneyBuilder closure gets called every time a store results a new state
+    /// which results in that journey being presented
+    func onState<S: Store, InnerJourney: JourneyPresentation>(
+        _ storeType: S.Type,
+        @JourneyBuilder _ onState: @escaping (_ state: S.State) -> InnerJourney
+    ) -> Self {
+        addConfiguration { presenter in
+            let store: S = self.presentable.get()
+            
+            presenter.bag += store.stateSignal.onValue { state in
+                let result: JourneyPresentResult<InnerJourney> = presenter.viewController.present(onState(state))
+                
+                switch result {
+                case let .presented(result):
+                    presenter.bag.hold(result as AnyObject)
+                case .shouldDismiss:
+                    presenter.dismisser(JourneyError.dismissed)
+                case .shouldPop:
+                    presenter.dismisser(JourneyError.cancelled)
+                case .shouldContinue:
+                    break
+                }
+            }
+        }
+    }
+    
+    /// Returns a new JourneyPresentation where the closure gets called each time the state changes
+    func onStateChange<S: Store>(
+        _ storeType: S.Type,
+        _ onState: @escaping (_ state: S.State, _ presenter: JourneyPresenter<Self.P>) -> Void
+    ) -> Self {
+        addConfiguration { presenter in
+            let store: S = self.presentable.get()
+            
+            presenter.bag += store.stateSignal.onValue { state in
+                onState(state, presenter)
             }
         }
     }

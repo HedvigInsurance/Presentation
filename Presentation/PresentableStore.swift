@@ -13,7 +13,10 @@ public protocol EmptyInitable {
     init()
 }
 
-open class StateStore<State: Codable & EmptyInitable, Action: Codable>: Store {
+public protocol StateProtocol: Codable & EmptyInitable & Equatable {}
+public protocol ActionProtocol: Codable & Equatable {}
+
+open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     let stateWriteSignal: CoreSignal<ReadWrite, State>
     let actionCallbacker = Callbacker<Action>()
     
@@ -22,7 +25,7 @@ open class StateStore<State: Codable & EmptyInitable, Action: Codable>: Store {
     }
     
     public var stateSignal: CoreSignal<Read, State> {
-        stateWriteSignal.readOnly()
+        stateWriteSignal.readOnly().distinct()
     }
     
     public var actionSignal: CoreSignal<Plain, Action> {
@@ -78,8 +81,8 @@ open class StateStore<State: Codable & EmptyInitable, Action: Codable>: Store {
 }
 
 public protocol Store {
-    associatedtype State: Codable
-    associatedtype Action: Codable
+    associatedtype State: StateProtocol
+    associatedtype Action: ActionProtocol
     
     static func getKey() -> UnsafeMutablePointer<Int>
     

@@ -11,7 +11,11 @@ import Flow
 import UIKit
 
 extension UIViewController {
-    func makeStandalone<J: JourneyPresentation>(_ presentation: J, dismisser: @escaping (Error?) -> Void) -> (UIViewController, DisposeBag) {
+    func makeStandalone<J: JourneyPresentation>(_ presentation: J, dismisser: @escaping (Error?) -> Void) -> (
+        viewController: UIViewController,
+        configurer: () -> Void,
+        bag: DisposeBag
+    ) {
         let (matter, result) = presentation.presentable.materialize()
         
         let vc = unsafeCastToUIViewController(tupleUnnest(matter))
@@ -30,8 +34,6 @@ extension UIViewController {
                 
         let bag = DisposeBag()
         
-        presentation.configure(JourneyPresenter(viewController: embeddedVC, matter: matter, bag: bag, dismisser: dismisser))
-        
         if let transformedResult = transformedResult as? FiniteJourneyResult {
             bag += transformedResult.plainJourneySignal.onValue { _ in }
         } else if let transformedResult = transformedResult as? FutureJourneyResult {
@@ -41,7 +43,9 @@ extension UIViewController {
         bag.hold(transformedResult as AnyObject)
         bag.hold(self)
         
-        return (embeddedVC, bag)
+        return (embeddedVC, {
+            presentation.configure(JourneyPresenter(viewController: embeddedVC, matter: matter, bag: bag, dismisser: dismisser))
+        }, bag)
     }
 }
 
@@ -70,9 +74,10 @@ public class TabbedJourney: JourneyPresentation {
         self.presentable = AnyPresentable(materialize: {
             let tabBarController = UITabBarController()
             
-            let (viewController, bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (viewController, configurer, bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
             
             tabBarController.viewControllers = [viewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
+            configurer()
             
             return (tabBarController, bag)
         })
@@ -104,8 +109,8 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, configurer1, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, configurer2, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -113,7 +118,9 @@ public class TabbedJourney: JourneyPresentation {
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
+            configurer1()
             viewControllerWasPresented(tab2ViewController)
+            configurer2()
             
             return (tabBarController, bag)
         })
@@ -147,9 +154,9 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, configurer1, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, configurer2, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, configurer3, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -158,8 +165,11 @@ public class TabbedJourney: JourneyPresentation {
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
+            configurer1()
             viewControllerWasPresented(tab2ViewController)
+            configurer2()
             viewControllerWasPresented(tab3ViewController)
+            configurer3()
             
             return (tabBarController, bag)
         })
@@ -195,10 +205,10 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
-            let (tab4ViewController, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, configurer1, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, configurer2, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, configurer3, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab4ViewController, configurer4, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -208,9 +218,13 @@ public class TabbedJourney: JourneyPresentation {
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
+            configurer1()
             viewControllerWasPresented(tab2ViewController)
+            configurer2()
             viewControllerWasPresented(tab3ViewController)
+            configurer3()
             viewControllerWasPresented(tab4ViewController)
+            configurer4()
             
             return (tabBarController, bag)
         })
@@ -248,11 +262,11 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
-            let (tab4ViewController, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
-            let (tab5ViewController, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, configurer1, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, configurer2, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, configurer3, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab4ViewController, configurer4, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
+            let (tab5ViewController, configurer5, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -263,10 +277,15 @@ public class TabbedJourney: JourneyPresentation {
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
+            configurer1()
             viewControllerWasPresented(tab2ViewController)
+            configurer2()
             viewControllerWasPresented(tab3ViewController)
+            configurer3()
             viewControllerWasPresented(tab4ViewController)
+            configurer4()
             viewControllerWasPresented(tab5ViewController)
+            configurer5()
             
             return (tabBarController, bag)
         })
@@ -306,12 +325,12 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
-            let (tab4ViewController, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
-            let (tab5ViewController, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
-            let (tab6ViewController, tab6Bag) = tabBarController.makeStandalone(tab6Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, configurer1, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, configurer2, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, configurer3, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab4ViewController, configurer4, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
+            let (tab5ViewController, configurer5, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
+            let (tab6ViewController, configurer6, tab6Bag) = tabBarController.makeStandalone(tab6Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -323,11 +342,17 @@ public class TabbedJourney: JourneyPresentation {
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController, tab6ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
+            configurer1()
             viewControllerWasPresented(tab2ViewController)
+            configurer2()
             viewControllerWasPresented(tab3ViewController)
+            configurer3()
             viewControllerWasPresented(tab4ViewController)
+            configurer4()
             viewControllerWasPresented(tab5ViewController)
+            configurer5()
             viewControllerWasPresented(tab6ViewController)
+            configurer6()
             
             return (tabBarController, bag)
         })
@@ -369,13 +394,13 @@ public class TabbedJourney: JourneyPresentation {
             
             let bag = DisposeBag()
 
-            let (tab1ViewController, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
-            let (tab2ViewController, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
-            let (tab3ViewController, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
-            let (tab4ViewController, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
-            let (tab5ViewController, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
-            let (tab6ViewController, tab6Bag) = tabBarController.makeStandalone(tab6Presentation, dismisser: { dismisser($0) })
-            let (tab7ViewController, tab7Bag) = tabBarController.makeStandalone(tab7Presentation, dismisser: { dismisser($0) })
+            let (tab1ViewController, configurer1, tab1Bag) = tabBarController.makeStandalone(tab1Presentation, dismisser: { dismisser($0) })
+            let (tab2ViewController, configurer2, tab2Bag) = tabBarController.makeStandalone(tab2Presentation, dismisser: { dismisser($0) })
+            let (tab3ViewController, configurer3, tab3Bag) = tabBarController.makeStandalone(tab3Presentation, dismisser: { dismisser($0) })
+            let (tab4ViewController, configurer4, tab4Bag) = tabBarController.makeStandalone(tab4Presentation, dismisser: { dismisser($0) })
+            let (tab5ViewController, configurer5, tab5Bag) = tabBarController.makeStandalone(tab5Presentation, dismisser: { dismisser($0) })
+            let (tab6ViewController, configurer6, tab6Bag) = tabBarController.makeStandalone(tab6Presentation, dismisser: { dismisser($0) })
+            let (tab7ViewController, configurer7, tab7Bag) = tabBarController.makeStandalone(tab7Presentation, dismisser: { dismisser($0) })
             
             bag += tab1Bag
             bag += tab2Bag
@@ -388,12 +413,19 @@ public class TabbedJourney: JourneyPresentation {
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController, tab6ViewController, tab7ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
             viewControllerWasPresented(tab1ViewController)
+            configurer1()
             viewControllerWasPresented(tab2ViewController)
+            configurer2()
             viewControllerWasPresented(tab3ViewController)
+            configurer3()
             viewControllerWasPresented(tab4ViewController)
+            configurer4()
             viewControllerWasPresented(tab5ViewController)
+            configurer5()
             viewControllerWasPresented(tab6ViewController)
+            configurer6()
             viewControllerWasPresented(tab7ViewController)
+            configurer7()
             
             return (tabBarController, bag)
         })
