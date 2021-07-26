@@ -155,7 +155,7 @@ public extension JourneyPresentation {
     /// Returns a new JourneyPresentation where the closure gets called every time a store emits an action
     func onAction<S: Store>(
         _ storeType: S.Type,
-        _ onAction: @escaping (_ action: S.Action) -> Void
+        _ onAction: @escaping (_ action: S.Action, _ presenter: JourneyPresenter<Self.P>) -> Void
     ) -> Self {
         addConfiguration { presenter in
             let store: S = self.presentable.get()
