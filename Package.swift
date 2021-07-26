@@ -32,7 +32,6 @@ let package = Package(
         .target(
             name: "PresentationDebugSupport",
             dependencies: [
-                .product(name: "Flow", package: "Flow"),
                 "Presentation",
                 .product(name: "Runtime", package: "Runtime"),
                 .product(name: "Swifter", package: "swifter")
