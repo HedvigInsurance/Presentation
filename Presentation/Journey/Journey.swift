@@ -70,7 +70,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
                 presenter.dismisser(error)
             }
             
-            presenter.bag += result?.onError { error in
+            presenter.bag += result?.onEnd {
                 presenter.dismisser(nil)
             }
             
@@ -138,7 +138,7 @@ public struct Journey<P: Presentable>: JourneyPresentation where P.Matter: UIVie
                 presenter.dismisser(error)
             }
             
-            presenter.bag += result?.onError { error in
+            presenter.bag += result?.onEnd {
                 presenter.dismisser(nil)
             }
             
