@@ -156,6 +156,13 @@ extension Store {
             store.send(reducer(action, stateSignal.value))
         }
     }
+    
+    /// Calls onAction whenever an action equal to action happens
+    public func onAction(_ action: Action, _ onAction: @escaping () -> Void) -> Disposable {
+        actionSignal.filter(predicate: { action == $0 }).onValue { action in
+            onAction()
+        }
+    }
 }
 
 public protocol Debugger {
