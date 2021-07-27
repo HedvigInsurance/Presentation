@@ -75,7 +75,15 @@ public class PresentableStoreDebugger: Debugger {
                 
                 func mapPropertiesToInput(_ properties: [Runtime.PropertyInfo]) -> [StoreDebuggerRepresentationActionInput] {
                     properties.compactMap { property in
-                        guard let propertyTypeInfo = try? typeInfo(of: property.type), property.type as? String.Type == nil else {
+                        if property.type as? String.Type != nil {
+                            return StoreDebuggerRepresentationActionInput(
+                                type: "String",
+                                name: property.name,
+                                inputs: []
+                            )
+                        }
+                        
+                        guard let propertyTypeInfo = try? typeInfo(of: property.type) else {
                             return nil
                         }
                         
