@@ -40,17 +40,17 @@ public struct DismissJourney: JourneyPresentation {
     public init() {}
 }
 
-public struct PoperPresentable: Presentable {
-    public class PoperViewController: UIViewController {}
+public struct PopperPresentable: Presentable {
+    public class PopperViewController: UIViewController {}
     
-    public func materialize() -> (PoperViewController, Void) {
-        return (PoperViewController(), ())
+    public func materialize() -> (PopperViewController, Void) {
+        return (PopperViewController(), ())
     }
 }
 
 public struct PopJourney: JourneyPresentation {
-    public var presentable: PoperPresentable {
-        PoperPresentable()
+    public var presentable: PopperPresentable {
+        PopperPresentable()
     }
 
     public var style: PresentationStyle {

@@ -18,8 +18,8 @@ public struct ConditionalJourneyPresentable<TrueP: Presentable, FalseP: Presenta
       
     let storage: Storage
     
-    init(first : TrueP)  { storage = .first(first)   }
-    init(second : FalseP) { storage = .second(second) }
+    init(first: TrueP)  { storage = .first(first) }
+    init(second: FalseP) { storage = .second(second) }
     
     public func materialize() -> ((TrueP.Matter?, FalseP.Matter?), (TrueP.Result?, FalseP.Result?)) {
         switch storage {
@@ -84,6 +84,7 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
             }
         }
     }
+    
     public var transform: ((TrueP.P.Result?, FalseP.P.Result?)) -> (TrueP.P.Result?, FalseP.P.Result?)
     
     public var presentable: ConditionalJourneyPresentable<TrueP.P, FalseP.P> {
@@ -95,12 +96,12 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
         }
     }
     
-  enum Storage {
-    case first(TrueP)
-    case second(FalseP)
-  }
+    enum Storage {
+        case first(TrueP)
+        case second(FalseP)
+    }
     
-  let storage: Storage
+    let storage: Storage
     
     func setupDefaults() {
         self.transform = { result in
@@ -134,17 +135,17 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
         }
     }
   
-  init(first : TrueP)  {
-    storage = .first(first)
-    self.transform = { $0 }
-    self.configure = { _ in }
-    setupDefaults()
-  }
-    
-  init(second : FalseP) {
-    storage = .second(second)
-    self.transform = { $0 }
-    self.configure = { _ in }
-    setupDefaults()
-  }
+    init(first: TrueP)  {
+        storage = .first(first)
+        self.transform = { $0 }
+        self.configure = { _ in }
+        setupDefaults()
+    }
+
+    init(second: FalseP) {
+        storage = .second(second)
+        self.transform = { $0 }
+        self.configure = { _ in }
+        setupDefaults()
+    }
 }

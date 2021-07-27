@@ -184,7 +184,7 @@ public class PresentableStoreContainer: NSObject {
 
     public func initialize<S: Store>(_ store: S) {
        setAssociatedValue(store, forKey: S.getKey())
-        Self.debugger?.registerStore(store)
+       Self.debugger?.registerStore(store)
     }
     
     public override init() {

@@ -57,7 +57,7 @@ extension UIViewController {
                 
         if vc as? DismisserPresentable.DismisserViewController != nil {
             return .shouldDismiss
-        } else if vc as? PoperPresentable.PoperViewController != nil {
+        } else if vc as? PopperPresentable.PopperViewController != nil {
             return .shouldPop
         } else if vc as? ContinuerPresentable.ContinuerViewController != nil {
             return .shouldContinue
