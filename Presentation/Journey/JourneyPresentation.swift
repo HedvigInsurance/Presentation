@@ -64,6 +64,28 @@ public extension JourneyPresentation {
             return $0
         }
     }
+    
+    /// Returns a new JourneyPresentation where `builder` will be called when `self` is being presented resuling in another journey being presented
+    func onPresent<InnerJourney: JourneyPresentation>(@JourneyBuilder _ builder: @escaping () -> InnerJourney) -> Self {
+        return addConfiguration { presenter in
+            let presentation = builder().onError { error in
+                presenter.dismisser(error)
+            }
+            
+            let result: JourneyPresentResult<InnerJourney> = presenter.viewController.present(presentation)
+            
+            switch result {
+            case let .presented(result):
+                presenter.bag.hold(result as AnyObject)
+            case .shouldDismiss:
+                presenter.dismisser(JourneyError.dismissed)
+            case .shouldPop:
+                break
+            case .shouldContinue:
+                break
+            }
+        }
+    }
 
     /// Returns a new JourneyPresentation where `callback` will be called when `self` is being dismissed.
     func onDismiss(_ callback: @escaping () -> ()) -> Self {
