@@ -32,7 +32,7 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         actionCallbacker.providedSignal
     }
     
-    open func effects(_ getState: () -> State, _ action: Action) -> Future<Action>? {
+    open func effects(_ getState: () -> State, _ action: Action) -> FiniteSignal<Action>? {
         fatalError("Must be overrided by subclass")
     }
     
@@ -62,11 +62,15 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         
         #endif
         
-        if let effectActionFuture = effects({
+        if let effectActionSignal = effects({
             stateSignal.value
         }, action) {
-            effectActionFuture.onValue { action in
+            let bag = DisposeBag()
+            
+            bag += effectActionSignal.atValue { action in
                 self.send(action)
+            }.onEnd {
+                bag.dispose()
             }
         }
     }
@@ -90,7 +94,7 @@ public protocol Store {
     var actionSignal: CoreSignal<Plain, Action> { get }
             
     func reduce(_ state: State, _ action: Action) -> State
-    func effects(_ getState: () -> State, _ action: Action) -> Future<Action>?
+    func effects(_ getState: () -> State, _ action: Action) -> FiniteSignal<Action>?
     func send(_ action: Action)
     
     init()
