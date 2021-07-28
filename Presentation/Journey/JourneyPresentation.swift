@@ -236,6 +236,7 @@ public extension JourneyPresentation {
                 let error = error as? JourneyError
                 
                 guard error != JourneyError.dismissed else {
+                    presenter.dismisser(JourneyError.cancelled)
                     return
                 }
                 
