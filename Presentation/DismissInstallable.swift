@@ -19,7 +19,7 @@ public extension UIViewController {
     /// Returns a signal that will install `self`'s `dismissBarItem` if any and signal when it's beeing pressed.
     /// - Note: Useful when implementing a custom `PresentationStyle`
     func installDismissButton() -> Signal<()> {
-        return Signal { callback in
+        return Signal { [unowned self] callback in
             let bag = DisposeBag()
             if let dismiss = self.dismissBarItem {
                 bag += self.installDismissBarItem(dismiss)
