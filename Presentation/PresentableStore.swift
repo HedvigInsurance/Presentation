@@ -195,7 +195,7 @@ public class PresentableStoreContainer: NSObject {
         super.init()
     }
     
-    var debugger: Debugger? = nil
+    public var debugger: Debugger? = nil
 }
 
 /// Set this to automatically populate all presentables with your global PresentableStoreContainer
