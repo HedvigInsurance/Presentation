@@ -141,8 +141,11 @@ public class PresentableStoreDebugger: Debugger {
     let networkLogger = NetworkLogger()
     
     public func startServer() {
+        if sharedPresentableStoreDebugger == nil {
+            URLSessionProxyDelegate.exhangeDelegateImplementation()
+        }
+        
         sharedPresentableStoreDebugger = self
-        URLSessionProxyDelegate.exhangeDelegateImplementation()
         
         server["/stores"] = { request in
             let encoded = try! JSONEncoder().encode(self.container)
