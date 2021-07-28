@@ -64,7 +64,7 @@ final class Weak<T> where T: AnyObject {
 }
 
 extension NSObjectProtocol {
-    func trackMemoryLeak(whenDisposed bag: DisposeBag, after: TimeInterval = 2, _ onLeak: @escaping (Self) -> () = { object in assertionFailure("Object Not Deallocated \(object)") }) {
+    func trackMemoryLeak(whenDisposed bag: DisposeBag, after: TimeInterval = 5, _ onLeak: @escaping (Self) -> () = { object in assertionFailure("Object Not Deallocated \(object)") }) {
         bag += { [weak self] in
             Scheduler.main.async(after: after) {
                 guard let strongSelf = self else { return }
