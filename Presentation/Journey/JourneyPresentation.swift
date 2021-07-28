@@ -228,7 +228,7 @@ public extension JourneyPresentation {
         }
     }
     
-    var cancelJourneyDismiss: Self {
+    var mapJourneyDismissToCancel: Self {
         var new = self
         let oldConfigure = new.configure
         new.configure = { presenter in
