@@ -60,10 +60,16 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
     }
 }
 
+var proxyKey = 0
+
 private extension URLSession {
     @objc class func proxy_init(configuration: URLSessionConfiguration, delegate: URLSessionDelegate, delegateQueue: OperationQueue?) -> URLSession {
         let delegate = URLSessionProxyDelegate(delegate: delegate)
-        return self.proxy_init(configuration: configuration, delegate: delegate, delegateQueue: delegateQueue)
+        
+        let session = self.proxy_init(configuration: configuration, delegate: delegate, delegateQueue: delegateQueue)
+        session.setAssociatedValue(delegate, forKey: &proxyKey)
+        
+        return session
     }
 }
 
