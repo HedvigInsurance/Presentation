@@ -37,6 +37,8 @@ struct StateWebsocketResponse: Codable {
     var state: String
 }
 
+var sharedPresentableStoreDebugger: PresentableStoreDebugger? = nil
+
 public class PresentableStoreDebugger: Debugger {
     let bag = DisposeBag()
     
@@ -136,8 +138,12 @@ public class PresentableStoreDebugger: Debugger {
     }
     
     let server = HttpServer()
+    let networkLogger = NetworkLogger()
     
     public func startServer() {
+        sharedPresentableStoreDebugger = self
+        URLSessionProxyDelegate.exhangeDelegateImplementation()
+        
         server["/stores"] = { request in
             let encoded = try! JSONEncoder().encode(self.container)
             return HttpResponse.ok(.data(encoded, contentType: "application/json"))
@@ -146,6 +152,11 @@ public class PresentableStoreDebugger: Debugger {
         server["/history"] = { request in
             let history = try! JSONSerialization.data(withJSONObject: ["history": self.actionHistory], options: [])
             return HttpResponse.ok(.data(history, contentType: "application/json"))
+        }
+        
+        server["/network"] = { request in
+            let encoded = try! JSONEncoder().encode(self.networkLogger)
+            return HttpResponse.ok(.data(encoded, contentType: "application/json"))
         }
         
         server["/state"] = websocket(text: nil, binary: nil, pong: { session, _ in
