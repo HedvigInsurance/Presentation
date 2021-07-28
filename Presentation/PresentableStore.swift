@@ -8,7 +8,6 @@
 
 import Foundation
 import Flow
-import UIKit
 
 public protocol EmptyInitable {
     init()
@@ -43,37 +42,35 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     
     /// Sends an action to the store, which is then reduced to produce a new state
     public func send(_ action: Action) {
-        UIView.performWithoutAnimation {
-            #if DEBUG
+        #if DEBUG
 
-            print("🦄 \(String(describing: Self.self)): sending \(action)")
-
-            #endif
-
-            stateWriteSignal.value = reduce(stateSignal.value, action)
-            actionCallbacker.callAll(with: action)
-
-            DispatchQueue.global(qos: .background).async {
-                Self.persist(self.stateSignal.value)
-            }
-
-            #if DEBUG
-
-            print("🦄 \(String(describing: Self.self)): new state")
-            dump(stateSignal.value)
-
-            #endif
-
-            if let effectActionSignal = effects({
-                stateSignal.value
-            }, action) {
-                let bag = DisposeBag()
-                
-                bag += effectActionSignal.atValue { action in
-                    self.send(action)
-                }.onEnd {
-                    bag.dispose()
-                }
+        print("🦄 \(String(describing: Self.self)): sending \(action)")
+        
+        #endif
+        
+        stateWriteSignal.value = reduce(stateSignal.value, action)
+        actionCallbacker.callAll(with: action)
+        
+        DispatchQueue.global(qos: .background).async {
+            Self.persist(self.stateSignal.value)
+        }
+        
+        #if DEBUG
+        
+        print("🦄 \(String(describing: Self.self)): new state")
+        dump(stateSignal.value)
+        
+        #endif
+        
+        if let effectActionSignal = effects({
+            stateSignal.value
+        }, action) {
+            let bag = DisposeBag()
+            
+            bag += effectActionSignal.atValue { action in
+                self.send(action)
+            }.onEnd {
+                bag.dispose()
             }
         }
     }
