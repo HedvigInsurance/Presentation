@@ -188,14 +188,14 @@ public class PresentableStoreContainer: NSObject {
 
     public func initialize<S: Store>(_ store: S) {
        setAssociatedValue(store, forKey: S.getKey())
-       Self.debugger?.registerStore(store)
+       debugger?.registerStore(store)
     }
     
     public override init() {
         super.init()
     }
     
-    public static var debugger: Debugger? = nil
+    var debugger: Debugger? = nil
 }
 
 /// Set this to automatically populate all presentables with your global PresentableStoreContainer
