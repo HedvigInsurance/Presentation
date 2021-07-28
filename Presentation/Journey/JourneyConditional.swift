@@ -45,101 +45,52 @@ func tupleUnnest(_ tuple: Any) -> Any {
     return tuple
 }
 
-public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: JourneyPresentation>: JourneyPresentation
+public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: JourneyPresentation>: JourneyPresentation
 {
-    public var style: PresentationStyle {
-        switch storage {
-        case let .first(presentation):
-            return presentation.style
-        case let .second(presentation):
-            return presentation.style
-        }
-    }
-    
-    public var options: PresentationOptions {
-        switch storage {
-        case let .first(presentation):
-            return presentation.options
-        case let .second(presentation):
-            return presentation.options
-        }
-    }
-            
+    public var style: PresentationStyle
+    public var options: PresentationOptions
     public var configure: (JourneyPresenter<P>) -> ()
     public var onDismiss: (Error?) -> ()
-    
     public var transform: ((TrueP.P.Result?, FalseP.P.Result?)) -> (TrueP.P.Result?, FalseP.P.Result?)
+    public var presentable: ConditionalJourneyPresentable<TrueP.P, FalseP.P>
     
-    public var presentable: ConditionalJourneyPresentable<TrueP.P, FalseP.P> {
-        switch storage {
-        case let .first(presentation):
-            return ConditionalJourneyPresentable(first: presentation.presentable)
-        case let .second(presentation):
-            return ConditionalJourneyPresentable(second: presentation.presentable)
-        }
-    }
-    
-    enum Storage {
-        case first(TrueP)
-        case second(FalseP)
-    }
-    
-    let storage: Storage
-    
-    func setupDefaults() {
-        self.transform = { [unowned self] result in
-            switch self.storage {
-            case let .first(presentation):
-                return (presentation.transform(result.0!), nil)
-            case let .second(presentation):
-                return (nil, presentation.transform(result.1!))
-            }
-        }
-        
-        self.configure = { [unowned self] journeyPresenter in
-            switch self.storage {
-            case let .first(presentation):
-                let presenter = JourneyPresenter<TrueP.P>(
-                    viewController: journeyPresenter.viewController,
-                    matter: journeyPresenter.matter.0!,
-                    bag: journeyPresenter.bag,
-                    dismisser: journeyPresenter.dismisser
-                )
-                presentation.configure(presenter)
-            case let .second(presentation):
-                let presenter = JourneyPresenter<FalseP.P>(
-                    viewController: journeyPresenter.viewController,
-                    matter: journeyPresenter.matter.1!,
-                    bag: journeyPresenter.bag,
-                    dismisser: journeyPresenter.dismisser
-                )
-                presentation.configure(presenter)
-            }
-        }
-        
-        self.onDismiss = { [unowned self] error in
-            switch self.storage {
-            case let .first(presentation):
-                presentation.onDismiss(error)
-            case let .second(presentation):
-                presentation.onDismiss(error)
-            }
-        }
-    }
-  
     init(first: TrueP)  {
-        storage = .first(first)
-        self.transform = { $0 }
-        self.configure = { _ in }
-        self.onDismiss = { _ in }
-        setupDefaults()
+        self.transform = { result in (first.transform(result.0!), nil) }
+        self.configure = { journeyPresenter in
+            let presenter = JourneyPresenter<TrueP.P>(
+                viewController: journeyPresenter.viewController,
+                matter: journeyPresenter.matter.0!,
+                bag: journeyPresenter.bag,
+                dismisser: journeyPresenter.dismisser
+            )
+            first.configure(presenter)
+        }
+        self.onDismiss = { error in
+            first.onDismiss(error)
+        }
+        
+        self.presentable = ConditionalJourneyPresentable(first: first.presentable)
+        self.options = first.options
+        self.style = first.style
     }
 
     init(second: FalseP) {
-        storage = .second(second)
-        self.transform = { $0 }
-        self.configure = { _ in }
-        self.onDismiss = { _ in }
-        setupDefaults()
+        self.transform = { result in (nil, second.transform(result.1!)) }
+        self.configure = { journeyPresenter in
+            let presenter = JourneyPresenter<FalseP.P>(
+                viewController: journeyPresenter.viewController,
+                matter: journeyPresenter.matter.1!,
+                bag: journeyPresenter.bag,
+                dismisser: journeyPresenter.dismisser
+            )
+            second.configure(presenter)
+        }
+        self.onDismiss = { error in
+            second.onDismiss(error)
+        }
+        
+        self.presentable = ConditionalJourneyPresentable(second: second.presentable)
+        self.options = second.options
+        self.style = second.style
     }
 }

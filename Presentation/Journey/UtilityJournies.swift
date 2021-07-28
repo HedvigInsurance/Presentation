@@ -91,7 +91,7 @@ public struct ContinueJourney: JourneyPresentation {
         []
     }
 
-    public var configure: (JourneyPresenter<P>) -> () = { _  in }
+    public var configure: (JourneyPresenter<ContinuerPresentable>) -> () = { _ in }
 
     public var onDismiss: (Error?) -> () = { _ in }
     

@@ -10,7 +10,7 @@ import Foundation
 import Flow
 import UIKit
 
-public class GroupJourney<InnerJourney: JourneyPresentation>: JourneyPresentation {
+public struct GroupJourney<InnerJourney: JourneyPresentation>: JourneyPresentation {
     public var onDismiss: (Error?) -> ()
     
     public var style: PresentationStyle
