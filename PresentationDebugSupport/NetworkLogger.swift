@@ -8,6 +8,7 @@
 import Foundation
 
 struct NetworkEntry: Codable {
+    var timestamp: Double
     var url: String
     var response: String
     var responseCode: Int
@@ -26,11 +27,12 @@ class NetworkLogger: Codable {
         }
         
         let entry = NetworkEntry(
+            timestamp: Date().timeIntervalSince1970,
             url: task.originalRequest?.url?.absoluteString ?? "",
             response: String(data: data, encoding: .utf8) ?? "",
             responseCode: statusCode
         )
         
-        entries.append(entry)
+        entries.insert(entry, at: 0)
     }
 }
