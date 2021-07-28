@@ -5,7 +5,6 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
     private weak var taskDelegate: URLSessionTaskDelegate?
     private let interceptedSelectors: Set<Selector>
 
-    /// - parameter delegate: The "real" session delegate.
     public init(delegate: URLSessionDelegate) {
         self.actualDelegate = delegate
         self.taskDelegate = delegate as? URLSessionTaskDelegate
@@ -16,12 +15,6 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
             #selector(URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:))
         ]
     }
-    
-    deinit {
-        print("deinit")
-    }
-
-    // MARK: URLSessionTaskDelegate
 
     public func urlSession(_ session: URLSession, task: URLSessionTask, didCompleteWithError error: Error?) {
         taskDelegate?.urlSession?(session, task: task, didCompleteWithError: error)
@@ -30,8 +23,6 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
     public func urlSession(_ session: URLSession, task: URLSessionTask, didFinishCollecting metrics: URLSessionTaskMetrics) {
         taskDelegate?.urlSession?(session, task: task, didFinishCollecting: metrics)
     }
-
-    // MARK: URLSessionDataDelegate
 
     public func urlSession(_ session: URLSession, dataTask: URLSessionDataTask, didReceive response: URLResponse, completionHandler: @escaping (URLSession.ResponseDisposition) -> Void) {
         if actualDelegate?.responds(to: #selector(URLSessionDataDelegate.urlSession(_:dataTask:didReceive:completionHandler:))) ?? false {
@@ -45,8 +36,6 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
         sharedPresentableStoreDebugger?.networkLogger.logTask(dataTask, data: data)
         (actualDelegate as? URLSessionDataDelegate)?.urlSession?(session, dataTask: dataTask, didReceive: data)
     }
-
-    // MARK: Proxy
 
     public override func responds(to aSelector: Selector!) -> Bool {
         if interceptedSelectors.contains(aSelector) {
