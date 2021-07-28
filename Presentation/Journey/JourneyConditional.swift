@@ -10,7 +10,16 @@ import Foundation
 import Flow
 import UIKit
 
-public struct ConditionalJourneyPresentable<TrueP: Presentable, FalseP: Presentable>: Presentable {
+public struct ConditionalJourneyPresentable<TrueP: Presentable, FalseP: Presentable>: Presentable, PresentableIdentifierExpressible {
+    public var presentableIdentifier: PresentableIdentifier {
+        switch self.storage {
+        case let .first(presentable):
+            return (presentable as? PresentableIdentifierExpressible)?.presentableIdentifier ?? PresentableIdentifier("\(type(of: presentable))")
+        case let .second(presentable):
+            return (presentable as? PresentableIdentifierExpressible)?.presentableIdentifier ?? PresentableIdentifier("\(type(of: presentable))")
+        }
+    }
+    
     enum Storage {
       case first(TrueP)
       case second(FalseP)
