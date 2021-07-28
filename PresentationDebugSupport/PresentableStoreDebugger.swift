@@ -141,9 +141,7 @@ public class PresentableStoreDebugger: Debugger {
     let networkLogger = NetworkLogger()
     
     public func startServer() {
-        if sharedPresentableStoreDebugger == nil {
-            URLSessionProxyDelegate.exhangeDelegateImplementation()
-        }
+        URLSessionProxyDelegate.exchangeDelegateImplementation()
         
         sharedPresentableStoreDebugger = self
         

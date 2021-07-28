@@ -47,6 +47,20 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
     public override func forwardingTarget(for selector: Selector!) -> Any? {
         interceptedSelectors.contains(selector) ? nil : actualDelegate
     }
+    
+    static var hasExchanged = false
+    
+    static func exchangeDelegateImplementation() -> Void {
+        guard !hasExchanged else {
+            return
+        }
+        self.hasExchanged = true
+        
+        if let lhs = class_getClassMethod(URLSession.self, #selector(URLSession.init(configuration:delegate:delegateQueue:))),
+           let rhs = class_getClassMethod(URLSession.self, #selector(URLSession.proxy_init(configuration:delegate:delegateQueue:))) {
+            method_exchangeImplementations(lhs, rhs)
+        }
+    }
 }
 
 var proxyKey = 0
@@ -59,14 +73,5 @@ private extension URLSession {
         session.setAssociatedValue(delegate, forKey: &proxyKey)
         
         return session
-    }
-}
-
-public extension URLSessionProxyDelegate {
-    static func exhangeDelegateImplementation() -> Void {
-        if let lhs = class_getClassMethod(URLSession.self, #selector(URLSession.init(configuration:delegate:delegateQueue:))),
-           let rhs = class_getClassMethod(URLSession.self, #selector(URLSession.proxy_init(configuration:delegate:delegateQueue:))) {
-            method_exchangeImplementations(lhs, rhs)
-        }
     }
 }
