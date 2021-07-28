@@ -87,7 +87,7 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
     let storage: Storage
     
     func setupDefaults() {
-        self.transform = { result in
+        self.transform = { [unowned self] result in
             switch self.storage {
             case let .first(presentation):
                 return (presentation.transform(result.0!), nil)
@@ -96,7 +96,7 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
             }
         }
         
-        self.configure = { journeyPresenter in
+        self.configure = { [unowned self] journeyPresenter in
             switch self.storage {
             case let .first(presentation):
                 let presenter = JourneyPresenter<TrueP.P>(
@@ -117,7 +117,7 @@ public class ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP: 
             }
         }
         
-        self.onDismiss = { error in
+        self.onDismiss = { [unowned self] error in
             switch self.storage {
             case let .first(presentation):
                 presentation.onDismiss(error)
