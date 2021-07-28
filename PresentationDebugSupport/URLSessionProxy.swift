@@ -16,6 +16,10 @@ public final class URLSessionProxyDelegate: NSObject, URLSessionTaskDelegate, UR
             #selector(URLSessionTaskDelegate.urlSession(_:task:didFinishCollecting:))
         ]
     }
+    
+    deinit {
+        print("deinit")
+    }
 
     // MARK: URLSessionTaskDelegate
 
