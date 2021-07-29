@@ -52,6 +52,7 @@ extension UIViewController {
         let (matter, result) = presentation.presentable.materialize()
         
         let vc = unsafeCastToUIViewController(tupleUnnest(matter))
+        vc.updatePresentationTitle(for: presentation.presentable)
         
         let transformedResult = presentation.transform(result)
                 

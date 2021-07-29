@@ -345,7 +345,7 @@ private struct InvisiblePresentable<Result>: Presentable {
     }
 }
 
-private extension UIViewController {
+extension UIViewController {
     func updatePresentationTitle<P: Presentable>(for presentable: P) {
         if let presentableIdentifier = (presentable as? PresentableIdentifierExpressible)?.presentableIdentifier {
             debugPresentationTitle = presentableIdentifier.value

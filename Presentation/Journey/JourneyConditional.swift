@@ -65,6 +65,13 @@ public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP:
     
     init(first: TrueP)  {
         self.transform = { result in (first.transform(result.0!), nil) }
+        self.onDismiss = { error in
+            first.onDismiss(error)
+        }
+        
+        self.presentable = ConditionalJourneyPresentable(first: first.presentable)
+        self.options = first.options
+        self.style = first.style
         self.configure = { journeyPresenter in
             let presenter = JourneyPresenter<TrueP.P>(
                 viewController: journeyPresenter.viewController,
@@ -74,17 +81,16 @@ public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP:
             )
             first.configure(presenter)
         }
-        self.onDismiss = { error in
-            first.onDismiss(error)
-        }
-        
-        self.presentable = ConditionalJourneyPresentable(first: first.presentable)
-        self.options = first.options
-        self.style = first.style
     }
 
     init(second: FalseP) {
         self.transform = { result in (nil, second.transform(result.1!)) }
+        self.onDismiss = { error in
+            second.onDismiss(error)
+        }
+        self.presentable = ConditionalJourneyPresentable(second: second.presentable)
+        self.options = second.options
+        self.style = second.style
         self.configure = { journeyPresenter in
             let presenter = JourneyPresenter<FalseP.P>(
                 viewController: journeyPresenter.viewController,
@@ -94,12 +100,5 @@ public struct ConditionalJourneyPresentation<TrueP: JourneyPresentation, FalseP:
             )
             second.configure(presenter)
         }
-        self.onDismiss = { error in
-            second.onDismiss(error)
-        }
-        
-        self.presentable = ConditionalJourneyPresentable(second: second.presentable)
-        self.options = second.options
-        self.style = second.style
     }
 }
