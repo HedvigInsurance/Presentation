@@ -64,15 +64,9 @@ extension UIViewController {
             return .shouldContinue
         }
         
-        let notifyDismissBag = DisposeBag()
         let notifyDismissCallbacker = Callbacker<Error?>()
-        
-        notifyDismissBag += notifyDismissCallbacker.take(first: 1).onValue { error in
-            presentation.onDismiss(error)
-            notifyDismissBag.dispose()
-        }
                                 
-        present(vc, style: presentation.style, options: presentation.options) { viewController, bag -> () in
+        let presenter = present(vc, style: presentation.style, options: presentation.options) { viewController, bag -> () in
             presentation.configure(JourneyPresenter(viewController: viewController, matter: matter, bag: bag, dismisser: { error in
                 bag.dispose()
                 notifyDismissCallbacker.callAll(with: error)
@@ -88,6 +82,11 @@ extension UIViewController {
         }
         .onCancel {
             notifyDismissCallbacker.callAll(with: JourneyError.cancelled)
+        }
+        
+        notifyDismissCallbacker.future.onValue { error in
+            presentation.onDismiss(error)
+            presenter.cancel()
         }
         
         return .presented(transformedResult)
