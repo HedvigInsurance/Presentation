@@ -113,7 +113,7 @@ private class NavigationControllerDelegate: NSObject, UINavigationControllerDele
         self.navigationController = navigationController
     }
 
-    fileprivate var popControllers = [UIViewController]()
+    fileprivate var popControllers = [Weak<UIViewController>]()
 
     fileprivate var popCallbacker = Callbacker<UIViewController>()
     var popSignal: Signal<UIViewController> {
@@ -154,8 +154,19 @@ private class NavigationControllerDelegate: NSObject, UINavigationControllerDele
     fileprivate func navigationController(_ navigationController: UINavigationController, willShow viewController: UIViewController, animated: Bool) {
         willShowCallbacker.callAll(with: (viewController: viewController, animated: animated))
 
-        let removedControllers = popControllers.filter { !navigationController.viewControllers.contains($0) }
-        removedControllers.forEach(willPopCallbacker.callAll)
+        let removedControllers = popControllers.filter {
+            guard let weakViewController = $0.value else {
+                return false
+            }
+            return !navigationController.viewControllers.contains(weakViewController)
+        }
+        
+        removedControllers.forEach { weakViewController in
+            guard let viewController = weakViewController.value else {
+                return
+            }
+            willPopCallbacker.callAll(with: viewController)
+        }
 
         navigationController.view.endEditing(true) // End editing to help nc in modal to reset it's size
         delegate?.navigationController?(navigationController, willShow: viewController, animated: animated)
@@ -164,9 +175,19 @@ private class NavigationControllerDelegate: NSObject, UINavigationControllerDele
     fileprivate func navigationController(_ navigationController: UINavigationController, didShow viewController: UIViewController, animated: Bool) {
         viewControllersCallbacker.callAll(with: navigationController.viewControllers)
 
-        let removedControllers = popControllers.filter { !navigationController.viewControllers.contains($0) }
-        removedControllers.forEach(popCallbacker.callAll)
-        popControllers = navigationController.viewControllers
+        let removedControllers = popControllers.filter {
+            guard let weakViewController = $0.value else {
+                return false
+            }
+            return !navigationController.viewControllers.contains(weakViewController)
+        }
+        removedControllers.forEach { weakViewController in
+            guard let viewController = weakViewController.value else {
+                return
+            }
+            popCallbacker.callAll(with: viewController)
+        }
+        popControllers = navigationController.viewControllers.map { Weak($0) }
         delegate?.navigationController?(navigationController, didShow: viewController, animated: animated)
     }
 
