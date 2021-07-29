@@ -20,7 +20,7 @@ extension UIWindow {
         let transformedResult = presentation.transform(result)
                 
         let presentationEvent = PresentationEvent.willPresent(
-            .init("\(type(of: presentation.presentable))"),
+            .init(vc.debugPresentationTitle ?? ""),
             from: .init(rootViewController?.debugPresentationTitle ?? ""),
             styleName: "default"
         )
