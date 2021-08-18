@@ -48,7 +48,7 @@ extension UIViewController {
         }
     }
     
-    func present<J: JourneyPresentation>(_ presentation: J) -> JourneyPresentResult<J> {
+    public func present<J: JourneyPresentation>(_ presentation: J) -> JourneyPresentResult<J> {
         let (matter, result) = presentation.presentable.materialize()
         
         let vc = unsafeCastToUIViewController(tupleUnnest(matter))
