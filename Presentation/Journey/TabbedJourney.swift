@@ -116,8 +116,6 @@ public struct TabbedJourney: JourneyPresentation {
             tabBarController.viewControllers = [viewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             configurer()
             
-            bag += Self.activeHandler(tabBarController)
-            
             return (tabBarController, bag)
         })
 
@@ -125,6 +123,8 @@ public struct TabbedJourney: JourneyPresentation {
         self.onDismiss = { _ in }
         self.style = style
         self.configure = { presenter in
+            presenter.bag += Self.activeHandler(presenter.matter)
+            
             dismisser = { error in
                 presenter.dismisser(error)
             }
@@ -159,8 +159,6 @@ public struct TabbedJourney: JourneyPresentation {
             configurer1()
             configurer2()
             
-            bag += Self.activeHandler(tabBarController)
-            
             return (tabBarController, bag)
         })
 
@@ -168,6 +166,8 @@ public struct TabbedJourney: JourneyPresentation {
         self.onDismiss = { _ in }
         self.style = style
         self.configure = { presenter in
+            presenter.bag += Self.activeHandler(presenter.matter)
+            
             dismisser = { error in
                 presenter.dismisser(error)
             }
@@ -207,8 +207,6 @@ public struct TabbedJourney: JourneyPresentation {
             configurer2()
             configurer3()
             
-            bag += Self.activeHandler(tabBarController)
-            
             return (tabBarController, bag)
         })
 
@@ -216,6 +214,8 @@ public struct TabbedJourney: JourneyPresentation {
         self.onDismiss = { _ in }
         self.style = style
         self.configure = { presenter in
+            presenter.bag += Self.activeHandler(presenter.matter)
+            
             dismisser = { error in
                 presenter.dismisser(error)
             }
@@ -260,8 +260,6 @@ public struct TabbedJourney: JourneyPresentation {
             configurer3()
             configurer4()
             
-            bag += Self.activeHandler(tabBarController)
-            
             return (tabBarController, bag)
         })
 
@@ -269,6 +267,8 @@ public struct TabbedJourney: JourneyPresentation {
         self.onDismiss = { _ in }
         self.style = style
         self.configure = { presenter in
+            presenter.bag += Self.activeHandler(presenter.matter)
+            
             dismisser = { error in
                 presenter.dismisser(error)
             }
@@ -318,8 +318,6 @@ public struct TabbedJourney: JourneyPresentation {
             configurer4()
             configurer5()
             
-            bag += Self.activeHandler(tabBarController)
-            
             return (tabBarController, bag)
         })
 
@@ -327,6 +325,8 @@ public struct TabbedJourney: JourneyPresentation {
         self.onDismiss = { _ in }
         self.style = style
         self.configure = { presenter in
+            presenter.bag += Self.activeHandler(presenter.matter)
+            
             dismisser = { error in
                 presenter.dismisser(error)
             }
@@ -381,8 +381,6 @@ public struct TabbedJourney: JourneyPresentation {
             configurer5()
             configurer6()
             
-            bag += Self.activeHandler(tabBarController)
-            
             return (tabBarController, bag)
         })
 
@@ -390,6 +388,8 @@ public struct TabbedJourney: JourneyPresentation {
         self.onDismiss = { _ in }
         self.style = style
         self.configure = { presenter in
+            presenter.bag += Self.activeHandler(presenter.matter)
+            
             dismisser = { error in
                 presenter.dismisser(error)
             }
@@ -449,8 +449,6 @@ public struct TabbedJourney: JourneyPresentation {
             configurer6()
             configurer7()
             
-            bag += Self.activeHandler(tabBarController)
-            
             return (tabBarController, bag)
         })
 
@@ -458,6 +456,8 @@ public struct TabbedJourney: JourneyPresentation {
         self.onDismiss = { _ in }
         self.style = style
         self.configure = { presenter in
+            presenter.bag += Self.activeHandler(presenter.matter)
+            
             dismisser = { error in
                 presenter.dismisser(error)
             }
