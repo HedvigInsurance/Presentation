@@ -25,14 +25,6 @@ extension UIViewController {
         vc.updatePresentationTitle(for: presentation.presentable)
         
         let transformedResult = presentation.transform(result)
-                
-        let presentationEvent = PresentationEvent.willPresent(
-            .init(vc.presentationDescription),
-            from: .init(self.presentationDescription),
-            styleName: "default"
-        )
-
-        presentablePresentationEventHandler(presentationEvent, #file, #function, #line)
 
         let embeddedVC = vc.embededInNavigationController(presentation.options)
                 
@@ -53,7 +45,7 @@ extension UIViewController {
     }
 }
 
-public class TabbedJourney: JourneyPresentation {
+public struct TabbedJourney: JourneyPresentation {
     public var onDismiss: (Error?) -> ()
     
     public var style: PresentationStyle
@@ -65,6 +57,39 @@ public class TabbedJourney: JourneyPresentation {
     public var configure: (JourneyPresenter<P>) -> ()
     
     public let presentable: AnyPresentable<UITabBarController, Disposable>
+    
+    static func becameActive(_ from: UIViewController, activeViewController: UIViewController) {
+        let presentationEvent = PresentationEvent.willPresent(
+            .init(activeViewController.presentationDescription),
+            from: .init(from.presentationDescription),
+            styleName: "default"
+        )
+
+        presentablePresentationEventHandler(presentationEvent, #file, #function, #line)
+    }
+    
+    static func resignedActive(_ from: UIViewController, activeViewController: UIViewController) {
+        viewControllerWasPresented(activeViewController)
+        
+        let presentationEvent = PresentationEvent.didCancel(
+            .init(activeViewController.presentationDescription),
+            from: .init(from.presentationDescription)
+        )
+
+        presentablePresentationEventHandler(presentationEvent, #file, #function, #line)
+    }
+    
+    static func activeHandler(_ tabBarController: UITabBarController) -> Disposable {
+        tabBarController.signal(for: \.selectedViewController).compactMap { viewController in
+            viewController
+        }.onValueDisposePrevious { viewController in
+            Self.becameActive(tabBarController, activeViewController: viewController)
+            
+            return Disposer {
+                Self.resignedActive(tabBarController, activeViewController: viewController)
+            }
+        }
+    }
     
     public init<Tab1: JourneyPresentation>(
         @JourneyBuilder _ tab1: @escaping () -> Tab1,
@@ -82,6 +107,8 @@ public class TabbedJourney: JourneyPresentation {
             
             tabBarController.viewControllers = [viewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             configurer()
+            
+            bag += Self.activeHandler(tabBarController)
             
             return (tabBarController, bag)
         })
@@ -121,10 +148,10 @@ public class TabbedJourney: JourneyPresentation {
             
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
-            viewControllerWasPresented(tab1ViewController)
             configurer1()
-            viewControllerWasPresented(tab2ViewController)
             configurer2()
+            
+            bag += Self.activeHandler(tabBarController)
             
             return (tabBarController, bag)
         })
@@ -168,12 +195,11 @@ public class TabbedJourney: JourneyPresentation {
             
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
-            viewControllerWasPresented(tab1ViewController)
             configurer1()
-            viewControllerWasPresented(tab2ViewController)
             configurer2()
-            viewControllerWasPresented(tab3ViewController)
             configurer3()
+            
+            bag += Self.activeHandler(tabBarController)
             
             return (tabBarController, bag)
         })
@@ -221,14 +247,12 @@ public class TabbedJourney: JourneyPresentation {
             
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
-            viewControllerWasPresented(tab1ViewController)
             configurer1()
-            viewControllerWasPresented(tab2ViewController)
             configurer2()
-            viewControllerWasPresented(tab3ViewController)
             configurer3()
-            viewControllerWasPresented(tab4ViewController)
             configurer4()
+            
+            bag += Self.activeHandler(tabBarController)
             
             return (tabBarController, bag)
         })
@@ -280,16 +304,13 @@ public class TabbedJourney: JourneyPresentation {
             
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
-            viewControllerWasPresented(tab1ViewController)
             configurer1()
-            viewControllerWasPresented(tab2ViewController)
             configurer2()
-            viewControllerWasPresented(tab3ViewController)
             configurer3()
-            viewControllerWasPresented(tab4ViewController)
             configurer4()
-            viewControllerWasPresented(tab5ViewController)
             configurer5()
+            
+            bag += Self.activeHandler(tabBarController)
             
             return (tabBarController, bag)
         })
@@ -345,18 +366,14 @@ public class TabbedJourney: JourneyPresentation {
             
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController, tab6ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
-            viewControllerWasPresented(tab1ViewController)
             configurer1()
-            viewControllerWasPresented(tab2ViewController)
             configurer2()
-            viewControllerWasPresented(tab3ViewController)
             configurer3()
-            viewControllerWasPresented(tab4ViewController)
             configurer4()
-            viewControllerWasPresented(tab5ViewController)
             configurer5()
-            viewControllerWasPresented(tab6ViewController)
             configurer6()
+            
+            bag += Self.activeHandler(tabBarController)
             
             return (tabBarController, bag)
         })
@@ -416,20 +433,15 @@ public class TabbedJourney: JourneyPresentation {
             
             tabBarController.viewControllers = [tab1ViewController, tab2ViewController, tab3ViewController, tab4ViewController, tab5ViewController, tab6ViewController, tab7ViewController].filter { $0 as? ContinuerPresentable.ContinuerViewController == nil }
             
-            viewControllerWasPresented(tab1ViewController)
             configurer1()
-            viewControllerWasPresented(tab2ViewController)
             configurer2()
-            viewControllerWasPresented(tab3ViewController)
             configurer3()
-            viewControllerWasPresented(tab4ViewController)
             configurer4()
-            viewControllerWasPresented(tab5ViewController)
             configurer5()
-            viewControllerWasPresented(tab6ViewController)
             configurer6()
-            viewControllerWasPresented(tab7ViewController)
             configurer7()
+            
+            bag += Self.activeHandler(tabBarController)
             
             return (tabBarController, bag)
         })
