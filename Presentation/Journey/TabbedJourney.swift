@@ -59,6 +59,8 @@ public struct TabbedJourney: JourneyPresentation {
     public let presentable: AnyPresentable<UITabBarController, Disposable>
     
     static func becameActive(_ from: UIViewController, activeViewController: UIViewController) {
+        viewControllerWasPresented(activeViewController)
+
         let presentationEvent = PresentationEvent.willPresent(
             .init(activeViewController.presentationDescription),
             from: .init(from.presentationDescription),
@@ -69,8 +71,6 @@ public struct TabbedJourney: JourneyPresentation {
     }
     
     static func resignedActive(_ from: UIViewController, activeViewController: UIViewController) {
-        viewControllerWasPresented(activeViewController)
-        
         let presentationEvent = PresentationEvent.didCancel(
             .init(activeViewController.presentationDescription),
             from: .init(from.presentationDescription)
@@ -83,10 +83,18 @@ public struct TabbedJourney: JourneyPresentation {
         tabBarController.signal(for: \.selectedViewController).compactMap { viewController in
             viewController
         }.onValueDisposePrevious { viewController in
-            Self.becameActive(tabBarController, activeViewController: viewController)
+            guard let navigationController = viewController as? UINavigationController, let lastViewController = navigationController.viewControllers.last else {
+                Self.becameActive(tabBarController, activeViewController: viewController)
+                
+                return Disposer {
+                    Self.resignedActive(tabBarController, activeViewController: viewController)
+                }
+            }
+            
+            Self.becameActive(tabBarController, activeViewController: lastViewController)
             
             return Disposer {
-                Self.resignedActive(tabBarController, activeViewController: viewController)
+                Self.resignedActive(tabBarController, activeViewController: lastViewController)
             }
         }
     }
