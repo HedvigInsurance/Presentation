@@ -11,7 +11,10 @@ import Flow
 import UIKit
 
 extension UIViewController {
-    func makeStandalone<J: JourneyPresentation>(_ presentation: J, dismisser: @escaping (Error?) -> Void) -> (
+    func makeStandalone<J: JourneyPresentation>(
+        _ presentation: J,
+        dismisser: @escaping (Error?) -> Void
+    ) -> (
         viewController: UIViewController,
         configurer: () -> Void,
         bag: DisposeBag
@@ -24,8 +27,8 @@ extension UIViewController {
         let transformedResult = presentation.transform(result)
                 
         let presentationEvent = PresentationEvent.willPresent(
-            .init("\(type(of: presentation.presentable))"),
-            from: .init(""),
+            .init(vc.presentationDescription),
+            from: .init(self.presentationDescription),
             styleName: "default"
         )
 
