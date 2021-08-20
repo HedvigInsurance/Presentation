@@ -20,6 +20,8 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     let stateWriteSignal: CoreSignal<ReadWrite, State>
     let actionCallbacker = Callbacker<Action>()
     
+    public var logger: (_ message: String) -> Void = { _ in }
+    
     public var state: State {
         stateWriteSignal.value
     }
@@ -44,7 +46,7 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     public func send(_ action: Action) {
         #if DEBUG
 
-        print("🦄 \(String(describing: Self.self)): sending \(action)")
+        logger("🦄 \(String(describing: Self.self)): sending \(action)")
         
         #endif
         
@@ -57,8 +59,7 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         
         #if DEBUG
         
-        print("🦄 \(String(describing: Self.self)): new state")
-        dump(stateSignal.value)
+        logger("🦄 \(String(describing: Self.self)): new state \n \(dump(stateSignal.value))")
         
         #endif
         
@@ -90,6 +91,7 @@ public protocol Store {
     
     static func getKey() -> UnsafeMutablePointer<Int>
     
+    var logger: (_ message: String) -> Void { get set }
     var stateSignal: CoreSignal<Read, State> { get }
     var actionSignal: CoreSignal<Plain, Action> { get }
             
@@ -180,7 +182,8 @@ public class PresentableStoreContainer: NSObject {
             return store
         }
         
-        let store = S.init()
+        var store = S.init()
+        store.logger = logger
         initialize(store)
         
         return store
@@ -196,6 +199,9 @@ public class PresentableStoreContainer: NSObject {
     }
     
     public var debugger: Debugger? = nil
+    public var logger: (_ message: String) -> Void = { message in
+        print(message)
+    }
 }
 
 /// Set this to automatically populate all presentables with your global PresentableStoreContainer
