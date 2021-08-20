@@ -80,7 +80,7 @@ public struct TabbedJourney: JourneyPresentation {
     }
     
     static func activeHandler(_ tabBarController: UITabBarController) -> Disposable {
-        tabBarController.signal(for: \.selectedViewController).compactMap { viewController in
+        tabBarController.signal(for: \.selectedViewController).atOnce().compactMap { viewController in
             viewController
         }.onValueDisposePrevious { viewController in
             guard let navigationController = viewController as? UINavigationController, let lastViewController = navigationController.viewControllers.last else {
