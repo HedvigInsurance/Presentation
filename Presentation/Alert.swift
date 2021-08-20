@@ -155,9 +155,6 @@ private extension Alert {
             }
         }
 
-        vc.debugPresentationArguments["title"] = title
-        vc.debugPresentationArguments["message"] = message
-
         return (vc, Future { completion in
             let bag = DisposeBag()
             let fields = ReadWriteSignal(self.fields.map { $0.initial })
