@@ -80,7 +80,7 @@ public struct TabbedJourney: JourneyPresentation {
     }
     
     static func activeHandler(_ tabBarController: UITabBarController) -> Disposable {
-        tabBarController.customAdaptivePresentationDelegate?.willPresentSignal.delay(by: 0).onValueDisposePrevious { _ in
+        Signal(after: 0.1).onValueDisposePrevious { _ in
             tabBarController.signal(for: \.selectedViewController).atOnce().compactMap { viewController in
                 viewController
             }.onValueDisposePrevious { viewController in
@@ -98,7 +98,7 @@ public struct TabbedJourney: JourneyPresentation {
                     Self.resignedActive(tabBarController, activeViewController: lastViewController)
                 }
             }
-        } ?? NilDisposer()
+        }
     }
     
     public init<Tab1: JourneyPresentation>(
