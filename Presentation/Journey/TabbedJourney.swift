@@ -80,23 +80,25 @@ public struct TabbedJourney: JourneyPresentation {
     }
     
     static func activeHandler(_ tabBarController: UITabBarController) -> Disposable {
-        tabBarController.signal(for: \.selectedViewController).atOnce().compactMap { viewController in
-            viewController
-        }.onValueDisposePrevious { viewController in
-            guard let navigationController = viewController as? UINavigationController, let lastViewController = navigationController.viewControllers.last else {
-                Self.becameActive(tabBarController, activeViewController: viewController)
+        tabBarController.customAdaptivePresentationDelegate?.willPresentSignal.delay(by: 0).onValueDisposePrevious { _ in
+            tabBarController.signal(for: \.selectedViewController).atOnce().compactMap { viewController in
+                viewController
+            }.onValueDisposePrevious { viewController in
+                guard let navigationController = viewController as? UINavigationController, let lastViewController = navigationController.viewControllers.last else {
+                    Self.becameActive(tabBarController, activeViewController: viewController)
+                    
+                    return Disposer {
+                        Self.resignedActive(tabBarController, activeViewController: viewController)
+                    }
+                }
+                
+                Self.becameActive(tabBarController, activeViewController: lastViewController)
                 
                 return Disposer {
-                    Self.resignedActive(tabBarController, activeViewController: viewController)
+                    Self.resignedActive(tabBarController, activeViewController: lastViewController)
                 }
             }
-            
-            Self.becameActive(tabBarController, activeViewController: lastViewController)
-            
-            return Disposer {
-                Self.resignedActive(tabBarController, activeViewController: lastViewController)
-            }
-        }
+        } ?? NilDisposer()
     }
     
     public init<Tab1: JourneyPresentation>(
