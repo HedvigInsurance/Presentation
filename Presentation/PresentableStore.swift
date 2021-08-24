@@ -42,6 +42,10 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         fatalError("Must be overrided by subclass")
     }
     
+    public func setState(_ state: State) {
+        self.stateWriteSignal.value = state
+    }
+    
     /// Sends an action to the store, which is then reduced to produce a new state
     public func send(_ action: Action) {
         #if DEBUG
@@ -94,7 +98,10 @@ public protocol Store {
     var logger: (_ message: String) -> Void { get set }
     var stateSignal: CoreSignal<Read, State> { get }
     var actionSignal: CoreSignal<Plain, Action> { get }
-            
+    
+    /// WARNING: Use this to set the state to the provided state BUT only for mocking purposes
+    func setState(_ state: State)
+    
     func reduce(_ state: State, _ action: Action) -> State
     func effects(_ getState: () -> State, _ action: Action) -> FiniteSignal<Action>?
     func send(_ action: Action)
