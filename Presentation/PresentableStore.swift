@@ -54,6 +54,8 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         
         #endif
         
+        let previousState = stateSignal.value
+        
         stateWriteSignal.value = reduce(stateSignal.value, action)
         actionCallbacker.callAll(with: action)
         
@@ -63,7 +65,11 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         
         #if DEBUG
         
-        logger("🦄 \(String(describing: Self.self)): new state \n \(dump(stateSignal.value))")
+        let newState = stateSignal.value
+
+        if newState != previousState {
+            logger("🦄 \(String(describing: Self.self)): new state \n \(dump(newState))")
+        }
         
         #endif
         
