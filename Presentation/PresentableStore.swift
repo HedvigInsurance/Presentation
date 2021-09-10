@@ -48,11 +48,7 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     
     /// Sends an action to the store, which is then reduced to produce a new state
     public func send(_ action: Action) {
-        #if DEBUG
-
         logger("🦄 \(String(describing: Self.self)): sending \(action)")
-        
-        #endif
         
         let previousState = stateSignal.value
         
@@ -62,17 +58,13 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         DispatchQueue.global(qos: .background).async {
             Self.persist(self.stateSignal.value)
         }
-        
-        #if DEBUG
-        
+                
         let newState = stateSignal.value
 
         if newState != previousState {
             logger("🦄 \(String(describing: Self.self)): new state \n \(dump(newState))")
         }
-        
-        #endif
-        
+                
         if let effectActionSignal = effects({
             self.stateSignal.value
         }, action) {
