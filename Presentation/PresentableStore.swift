@@ -27,7 +27,7 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
             stateWriteSignal.value
         }
         set {
-            stateWriteSignal.value = newValue
+            setState(newValue)
         }
     }
     
@@ -103,18 +103,12 @@ public protocol Store {
     var logger: (_ message: String) -> Void { get set }
     var stateSignal: CoreSignal<Read, State> { get }
     var actionSignal: CoreSignal<Plain, Action> { get }
-<<<<<<< Updated upstream
     
     /// WARNING: Use this to set the state to the provided state BUT only for mocking purposes
     func setState(_ state: State)
-    
-    func reduce(_ state: State, _ action: Action) -> State
-    func effects(_ getState: @escaping () -> State, _ action: Action) -> FiniteSignal<Action>?
-=======
             
     func reduce(_ state: inout State, _ action: Action)
-    func effects(_ getState: () -> State, _ action: Action) -> FiniteSignal<Action>?
->>>>>>> Stashed changes
+    func effects(_ getState: @escaping () -> State, _ action: Action) -> FiniteSignal<Action>?
     func send(_ action: Action)
     
     init()
