@@ -23,7 +23,12 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     public var logger: (_ message: String) -> Void = { _ in }
     
     public var state: State {
-        stateWriteSignal.value
+        get {
+            stateWriteSignal.value
+        }
+        set {
+            stateWriteSignal.value = newValue
+        }
     }
     
     public var stateSignal: CoreSignal<Read, State> {
@@ -38,7 +43,7 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         fatalError("Must be overrided by subclass")
     }
     
-    open func reduce(_ state: State, _ action: Action) -> State {
+    open func reduce(_ state: inout State, _ action: Action) {
         fatalError("Must be overrided by subclass")
     }
     
@@ -52,7 +57,7 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         
         let previousState = stateSignal.value
         
-        stateWriteSignal.value = reduce(stateSignal.value, action)
+        reduce(&state, action)
         actionCallbacker.callAll(with: action)
         
         DispatchQueue.global(qos: .background).async {
@@ -98,12 +103,18 @@ public protocol Store {
     var logger: (_ message: String) -> Void { get set }
     var stateSignal: CoreSignal<Read, State> { get }
     var actionSignal: CoreSignal<Plain, Action> { get }
+<<<<<<< Updated upstream
     
     /// WARNING: Use this to set the state to the provided state BUT only for mocking purposes
     func setState(_ state: State)
     
     func reduce(_ state: State, _ action: Action) -> State
     func effects(_ getState: @escaping () -> State, _ action: Action) -> FiniteSignal<Action>?
+=======
+            
+    func reduce(_ state: inout State, _ action: Action)
+    func effects(_ getState: () -> State, _ action: Action) -> FiniteSignal<Action>?
+>>>>>>> Stashed changes
     func send(_ action: Action)
     
     init()
