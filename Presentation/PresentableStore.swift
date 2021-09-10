@@ -62,7 +62,9 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         let newState = stateSignal.value
 
         if newState != previousState {
-            logger("🦄 \(String(describing: Self.self)): new state \n \(dump(newState))")
+            logger("🦄 \(String(describing: Self.self)): new state \n \(newState)")
+        } else {
+            logger("🦄 \(String(describing: Self.self)): state was reduced but resulted in no change")
         }
                 
         if let effectActionSignal = effects({
