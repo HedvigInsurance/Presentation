@@ -111,6 +111,12 @@ public protocol Store {
 
 var pointers: [String: UnsafeMutablePointer<Int>] = [:]
 
+var storePersistenceDirectory: URL {
+    let paths = FileManager.default.urls(for: .applicationSupportDirectory, in: .userDomainMask)
+    let documentsDirectory = paths[0]
+    return documentsDirectory.appendingPathComponent("PresentableStore")
+}
+
 extension Store {
     public static func getKey() -> UnsafeMutablePointer<Int> {
         let key = String(describing: Self.self)
@@ -122,14 +128,9 @@ extension Store {
         return pointers[key]!
     }
     
-    static var documentsDirectory: URL {
-        let paths = FileManager.default.urls(for: .documentDirectory, in: .userDomainMask)
-        let documentsDirectory = paths[0]
-        return documentsDirectory
-    }
-    
     static var persistenceURL: URL {
-        let docURL = documentsDirectory
+        let docURL = storePersistenceDirectory
+        try? FileManager.default.createDirectory(at: docURL, withIntermediateDirectories: true, attributes: nil)
         return docURL.appendingPathComponent(String(describing: Self.self))
     }
 
@@ -195,7 +196,7 @@ public class PresentableStoreContainer: NSObject {
         
         return store
     }
-
+    
     public func initialize<S: Store>(_ store: S) {
        setAssociatedValue(store, forKey: S.getKey())
        debugger?.registerStore(store)
@@ -203,6 +204,10 @@ public class PresentableStoreContainer: NSObject {
     
     public override init() {
         super.init()
+    }
+    
+    public func deletePersistanceContainer() {
+        try? FileManager.default.removeItem(at: storePersistenceDirectory)
     }
     
     public var debugger: Debugger? = nil
