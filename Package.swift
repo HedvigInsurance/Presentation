@@ -28,7 +28,9 @@ let package = Package(
             dependencies: [
                 .product(name: "Flow", package: "Flow")
             ],
-            path: "Presentation"),
+            path: "Presentation",
+            exclude: ["Info.plist"]
+        ),
         .target(
             name: "PresentationDebugSupport",
             dependencies: [
