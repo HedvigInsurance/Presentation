@@ -121,13 +121,15 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         }, action) {
             let bag = DisposeBag()
             
+            let effectSignal = EffectSignal(action, effectActionSignal)
+            
             bag += effectActionSignal.atValue { action in
                 self.send(action)
-            }.onEnd { [weak bag] in
-                bag?.dispose()
+            }.onEnd { [weak self] in
+                self?.cancelEffect(effectSignal.id)
             }
             
-            cancellableEffects[EffectSignal(action, effectActionSignal)] = bag
+            cancellableEffects[effectSignal] = bag
         }
     }
     
