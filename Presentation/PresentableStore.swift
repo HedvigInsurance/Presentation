@@ -16,6 +16,29 @@ public protocol EmptyInitable {
 public protocol StateProtocol: Codable & EmptyInitable & Equatable {}
 public protocol ActionProtocol: Codable & Equatable {}
 
+public struct EffectSignal<Action>: SignalProvider, Hashable {
+    public static func == (lhs: EffectSignal<Action>, rhs: EffectSignal<Action>) -> Bool {
+        lhs.id == rhs.id
+    }
+    
+    public var action: Action
+    public var id = UUID()
+    var signal: FiniteSignal<Action>
+    
+    public var providedSignal: CoreSignal<Finite, Action> {
+        signal
+    }
+    
+    public func hash(into hasher: inout Hasher) {
+        hasher.combine(id)
+    }
+
+    public init(_ action: Action, _ signal: FiniteSignal<Action>) {
+        self.action = action
+        self.signal = signal
+    }
+}
+
 open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     let stateWriteSignal: CoreSignal<ReadWrite, State>
     let actionCallbacker = Callbacker<Action>()
@@ -46,6 +69,32 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         self.stateWriteSignal.value = state
     }
     
+    public var cancellableEffects: [EffectSignal<Action>: DisposeBag] = [:]
+    
+    public func cancelEffect(_ id: UUID) {
+        cancellableEffects.filter { key, _ in
+            key.id == id
+        }.forEach { cancellableEffect in
+            cancellableEffect.value.dispose()
+            
+            if let index = cancellableEffects.index(forKey: cancellableEffect.key) {
+                cancellableEffects.remove(at: index)
+            }
+        }
+    }
+    
+    public func cancelEffect(_ action: Action) {
+        cancellableEffects.filter { key, _ in
+            key.action == action
+        }.forEach { cancellableEffect in
+            cancellableEffect.value.dispose()
+            
+            if let index = cancellableEffects.index(forKey: cancellableEffect.key) {
+                cancellableEffects.remove(at: index)
+            }
+        }
+    }
+    
     /// Sends an action to the store, which is then reduced to produce a new state
     public func send(_ action: Action) {
         logger("🦄 \(String(describing: Self.self)): sending \(action)")
@@ -74,9 +123,11 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
             
             bag += effectActionSignal.atValue { action in
                 self.send(action)
-            }.onEnd {
-                bag.dispose()
+            }.onEnd { [weak bag] in
+                bag?.dispose()
             }
+            
+            cancellableEffects[EffectSignal(action, effectActionSignal)] = bag
         }
     }
     
@@ -98,6 +149,7 @@ public protocol Store {
     var logger: (_ message: String) -> Void { get set }
     var stateSignal: CoreSignal<Read, State> { get }
     var actionSignal: CoreSignal<Plain, Action> { get }
+    var cancellableEffects: [EffectSignal<Action>: DisposeBag] { get }
     
     /// WARNING: Use this to set the state to the provided state BUT only for mocking purposes
     func setState(_ state: State)
@@ -105,6 +157,8 @@ public protocol Store {
     func reduce(_ state: State, _ action: Action) -> State
     func effects(_ getState: @escaping () -> State, _ action: Action) -> FiniteSignal<Action>?
     func send(_ action: Action)
+    func cancelEffect(_ id: UUID)
+    func cancelEffect(_ action: Action)
     
     init()
 }
