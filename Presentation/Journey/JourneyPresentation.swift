@@ -31,10 +31,10 @@ public protocol JourneyPresentation {
     var presentable: P { get }
 
     /// The presentation style to use when presenting `self`.
-    var style: PresentationStyle { get }
+    var style: PresentationStyle { get set }
 
     /// The presentation options to use when presenting `self`.
-    var options: PresentationOptions { get }
+    var options: PresentationOptions { get set }
     
     /// A transformation to apply on the `materialized()` result.
     var transform: (P.Result) -> P.Result { get set }
@@ -47,6 +47,20 @@ public protocol JourneyPresentation {
 }
 
 public extension JourneyPresentation {
+    /// Returns a new JourneyPresentation where the style has been overriden
+    func style(_ style: PresentationStyle) -> Self {
+        var new = self
+        new.style = style
+        return new
+    }
+    
+    /// Returns a new JourneyPresentation where options has been overriden
+    func options(_ options: PresentationOptions) -> Self {
+        var new = self
+        new.options = options
+        return new
+    }
+    
     /// Returns a new JourneyPresentation where the result will be transformed using `transform`.
     func map(_ transform: @escaping (P.Result) -> P.Result) -> Self {
         let presentationTransform = self.transform
@@ -228,6 +242,7 @@ public extension JourneyPresentation {
         }
     }
     
+    /// Makes a journey dismiss into a cancel instead, effectively stopping propagation of dismissal.
     var mapJourneyDismissToCancel: Self {
         var new = self
         let oldConfigure = new.configure

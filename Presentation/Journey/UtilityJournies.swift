@@ -23,13 +23,9 @@ public struct DismissJourney: JourneyPresentation {
         DismisserPresentable()
     }
 
-    public var style: PresentationStyle {
-        .default
-    }
-
-    public var options: PresentationOptions {
-        []
-    }
+    public var style: PresentationStyle = .default
+    
+    public var options: PresentationOptions = []
 
     public var configure: (JourneyPresenter<P>) -> () = { _ in }
 
@@ -53,14 +49,10 @@ public struct PopJourney: JourneyPresentation {
         PopperPresentable()
     }
 
-    public var style: PresentationStyle {
-        .default
-    }
-
-    public var options: PresentationOptions {
-        []
-    }
-
+    public var style: PresentationStyle = .default
+    
+    public var options: PresentationOptions = []
+    
     public var configure: (JourneyPresenter<P>) -> () = { _ in }
 
     public var onDismiss: (Error?) -> () = { _ in }
@@ -83,13 +75,9 @@ public struct ContinueJourney: JourneyPresentation {
         ContinuerPresentable()
     }
 
-    public var style: PresentationStyle {
-        .default
-    }
-
-    public var options: PresentationOptions {
-        []
-    }
+    public var style: PresentationStyle = .default
+    
+    public var options: PresentationOptions = []
 
     public var configure: (JourneyPresenter<ContinuerPresentable>) -> () = { _ in }
 
