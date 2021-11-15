@@ -48,14 +48,14 @@ public protocol JourneyPresentation {
 
 public extension JourneyPresentation {
     /// Returns a new JourneyPresentation where the style has been overriden
-    func style(_ style: PresentationStyle) -> Self {
+    func setStyle(_ style: PresentationStyle) -> Self {
         var new = self
         new.style = style
         return new
     }
     
     /// Returns a new JourneyPresentation where options has been overriden
-    func options(_ options: PresentationOptions) -> Self {
+    func setOptions(_ options: PresentationOptions) -> Self {
         var new = self
         new.options = options
         return new
