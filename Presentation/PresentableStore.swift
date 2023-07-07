@@ -284,3 +284,33 @@ extension Presentable {
         return storeContainer.get()
     }
 }
+
+public protocol LoadingActions: Codable & Equatable & Hashable {}
+
+
+public enum LoadingState<T>: Codable & Equatable & Hashable where T: Codable & Equatable & Hashable {
+    case loading
+    case error(error: T)
+}
+
+open class LoadingStateStore<State: StateProtocol, Action: ActionProtocol, Loading: LoadingActions>: StateStore<State, Action>  {
+    private var loadingStates: [Loading: LoadingState<String>] = [:]
+    private let loadingWriteSignal: CoreSignal<ReadWrite, [Loading: LoadingState<String>]> = ReadWriteSignal([:])
+
+    public var loadingSignal: CoreSignal<Read, [Loading: LoadingState<String>]> {
+        loadingWriteSignal.readOnly().distinct()
+    }
+    
+    public func setLoadingState(for action: Loading, state: LoadingState<String>?) {
+        if let state {
+            loadingStates[action] = state
+        } else {
+            loadingStates.removeValue(forKey: action)
+        }
+        loadingWriteSignal.value = loadingStates
+    }
+    
+    public required init() {
+        super.init()
+    }
+}
