@@ -285,7 +285,7 @@ extension Presentable {
     }
 }
 
-public protocol LoadingActions: Codable & Equatable & Hashable {}
+public protocol LoadingProtocol: Codable & Equatable & Hashable {}
 
 
 public enum LoadingState<T>: Codable & Equatable & Hashable where T: Codable & Equatable & Hashable {
@@ -293,22 +293,59 @@ public enum LoadingState<T>: Codable & Equatable & Hashable where T: Codable & E
     case error(error: T)
 }
 
-open class LoadingStateStore<State: StateProtocol, Action: ActionProtocol, Loading: LoadingActions>: StateStore<State, Action>  {
-    private var loadingStates: [Loading: LoadingState<String>] = [:]
+
+public protocol StoreLoading {
+    associatedtype Loading: LoadingProtocol
+    
+    var loadingSignal: CoreSignal<Read, [Loading: LoadingState<String>]> { get }
+    func removeLoading(for action: Loading)
+    
+    func setLoading(for action: Loading)
+    
+    func setError(_ error: String, for action: Loading)
+    
+    func reset()
+    
+    init()
+}
+
+
+open class LoadingStateStore<State: StateProtocol, Action: ActionProtocol, Loading: LoadingProtocol>: StateStore<State, Action>, StoreLoading  {
+    private var loadingStates: [Loading: LoadingState<String>] = [:] {
+        didSet{
+            loadingWriteSignal.value = loadingStates
+        }
+    }
     private let loadingWriteSignal: CoreSignal<ReadWrite, [Loading: LoadingState<String>]> = ReadWriteSignal([:])
 
     public var loadingSignal: CoreSignal<Read, [Loading: LoadingState<String>]> {
         loadingWriteSignal.readOnly().distinct()
     }
     
-    public func setLoadingState(for action: Loading, state: LoadingState<String>?) {
-        if let state {
-            loadingStates[action] = state
-        } else {
-            loadingStates.removeValue(forKey: action)
-        }
+    public func removeLoading(for action: Loading) {
+        loadingStates.removeValue(forKey: action)
         loadingWriteSignal.value = loadingStates
     }
+    
+    public func setLoading(for action: Loading) {
+        loadingStates[action] = .loading
+    }
+    
+    public func setError(_ error: String, for action: Loading){
+        loadingStates[action] = .error(error: error)
+    }
+    
+    public func reset() {
+        loadingStates.removeAll()
+    }
+//
+//    public func setLoadingState(for action: Loading, state: LoadingState<String>?) {
+//        if let state {
+//            loadingStates[action] = state
+//        } else {
+//            loadingStates.removeValue(forKey: action)
+//        }
+//    }
     
     public required init() {
         super.init()
