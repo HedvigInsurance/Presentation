@@ -323,29 +323,29 @@ open class LoadingStateStore<State: StateProtocol, Action: ActionProtocol, Loadi
     }
     
     public func removeLoading(for action: Loading) {
-        loadingStates.removeValue(forKey: action)
-        loadingWriteSignal.value = loadingStates
+        DispatchQueue.main.async {[weak self] in guard let self = self else { return }
+            self.loadingStates.removeValue(forKey: action)
+            self.loadingWriteSignal.value = self.loadingStates
+        }
     }
     
     public func setLoading(for action: Loading) {
-        loadingStates[action] = .loading
+        DispatchQueue.main.async {[weak self] in guard let self = self else { return }
+            self.loadingStates[action] = .loading
+        }
     }
     
     public func setError(_ error: String, for action: Loading){
-        loadingStates[action] = .error(error: error)
+        DispatchQueue.main.async {[weak self] in guard let self = self else { return }
+            self.loadingStates[action] = .error(error: error)
+        }
     }
     
     public func reset() {
-        loadingStates.removeAll()
+        DispatchQueue.main.async {[weak self] in guard let self = self else { return }
+            loadingStates.removeAll()
+        }
     }
-//
-//    public func setLoadingState(for action: Loading, state: LoadingState<String>?) {
-//        if let state {
-//            loadingStates[action] = state
-//        } else {
-//            loadingStates.removeValue(forKey: action)
-//        }
-//    }
     
     public required init() {
         super.init()
