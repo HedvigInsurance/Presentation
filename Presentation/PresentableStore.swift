@@ -61,6 +61,10 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         fatalError("Must be overrided by subclass")
     }
     
+    open func effects(_ getState: @escaping () -> State, _ action: Action) async throws  {
+        throw PresentableStoreError.notImplemented
+    }
+    
     open func reduce(_ state: State, _ action: Action) -> State {
         fatalError("Must be overrided by subclass")
     }
@@ -113,22 +117,29 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         if newState != previousState {
             logger("🦄 \(String(describing: Self.self)): new state \n \(newState)")
         }
-                
-        if let effectActionSignal = effects({
-            self.stateSignal.value
-        }, action) {
-            let bag = DisposeBag()
-            
-            let effectSignal = EffectSignal(action, effectActionSignal)
-            
-            bag += effectActionSignal.atValue { action in
-                self.send(action)
-            }.onEnd { [weak self] in
-                self?.cancelEffect(effectSignal.id)
+        Task {
+            do {
+                try await effects({
+                    self.stateSignal.value
+                }, action)
+            } catch _ {
+                if let effectActionSignal: FiniteSignal<Action> = effects({
+                    self.stateSignal.value
+                }, action) {
+                    let bag = DisposeBag()
+                    
+                    let effectSignal = EffectSignal(action, effectActionSignal)
+                    
+                    bag += effectActionSignal.atValue { action in
+                        self.send(action)
+                    }.onEnd { [weak self] in
+                        self?.cancelEffect(effectSignal.id)
+                    }
+                    cancellableEffects[effectSignal] = bag
+                }
             }
-            
-            cancellableEffects[effectSignal] = bag
         }
+        
     }
     
     public required init() {
@@ -156,6 +167,7 @@ public protocol Store {
     
     func reduce(_ state: State, _ action: Action) -> State
     func effects(_ getState: @escaping () -> State, _ action: Action) -> FiniteSignal<Action>?
+    func effects(_ getState: @escaping () -> State, _ action: Action) async throws
     func send(_ action: Action)
     func cancelEffect(_ id: UUID)
     func cancelEffect(_ action: Action)
@@ -348,4 +360,8 @@ open class LoadingStateStore<State: StateProtocol, Action: ActionProtocol, Loadi
     public required init() {
         super.init()
     }
+}
+
+enum PresentableStoreError: Error {
+    case notImplemented
 }
