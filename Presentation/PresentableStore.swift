@@ -117,25 +117,30 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         if newState != previousState {
             logger("🦄 \(String(describing: Self.self)): new state \n \(newState)")
         }
-        Task {
+        let threadBefore = Thread.current
+        Task {[weak self] in guard let self = self else { return }
             do {
                 try await effects({
                     self.stateSignal.value
                 }, action)
             } catch _ {
-                if let effectActionSignal: FiniteSignal<Action> = effects({
-                    self.stateSignal.value
-                }, action) {
-                    let bag = DisposeBag()
-                    
-                    let effectSignal = EffectSignal(action, effectActionSignal)
-                    
-                    bag += effectActionSignal.atValue { action in
-                        self.send(action)
-                    }.onEnd { [weak self] in
-                        self?.cancelEffect(effectSignal.id)
+                DispatchQueue.main.async {[weak self] in guard let self = self else { return }
+                    if let effectActionSignal: FiniteSignal<Action> = self.effects({
+                        self.stateSignal.value
+                    }, action) { //[weak self] in
+                        let bag = DisposeBag()
+                        
+                        let effectSignal = EffectSignal(action, effectActionSignal)
+                        
+                        bag += effectActionSignal.atValue { action in
+                            self.send(action)
+                        }.onEnd { [weak self] in
+                            self?.cancelEffect(effectSignal.id)
+                        }
+                        let thread = Thread.current
+                        print("Thread diff: \(threadBefore) - \(thread)")
+                        self.cancellableEffects[effectSignal] = bag
                     }
-                    cancellableEffects[effectSignal] = bag
                 }
             }
         }
