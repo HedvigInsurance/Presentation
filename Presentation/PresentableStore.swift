@@ -113,7 +113,7 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         }
                 
         let newState = stateSignal.value
-
+        
         if newState != previousState {
             logger("🦄 \(String(describing: Self.self)): new state \n \(newState)")
         }
@@ -124,9 +124,10 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
                 }, action)
             } catch _ {
                 DispatchQueue.main.async {[weak self] in guard let self = self else { return }
+                    let previousThread = Thread.current
                     if let effectActionSignal: FiniteSignal<Action> = self.effects({
                         self.stateSignal.value
-                    }, action) { //[weak self] in
+                    }, action) {
                         let bag = DisposeBag()
                         
                         let effectSignal = EffectSignal(action, effectActionSignal)
