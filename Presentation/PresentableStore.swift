@@ -124,7 +124,6 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
                 }, action)
             } catch _ {
                 DispatchQueue.main.async {[weak self] in guard let self = self else { return }
-                    let previousThread = Thread.current
                     if let effectActionSignal: FiniteSignal<Action> = self.effects({
                         self.stateSignal.value
                     }, action) {
@@ -132,8 +131,8 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
                         
                         let effectSignal = EffectSignal(action, effectActionSignal)
                         
-                        bag += effectActionSignal.atValue { action in
-                            self.send(action)
+                        bag += effectActionSignal.atValue {[weak self] action in
+                            self?.send(action)
                         }.onEnd { [weak self] in
                             self?.cancelEffect(effectSignal.id)
                         }
@@ -142,7 +141,6 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
                 }
             }
         }
-        
     }
     
     public required init() {
