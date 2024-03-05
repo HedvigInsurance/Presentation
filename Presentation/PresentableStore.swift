@@ -117,7 +117,6 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         if newState != previousState {
             logger("🦄 \(String(describing: Self.self)): new state \n \(newState)")
         }
-        let threadBefore = Thread.current
         Task {[weak self] in guard let self = self else { return }
             do {
                 try await effects({
@@ -137,8 +136,6 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
                         }.onEnd { [weak self] in
                             self?.cancelEffect(effectSignal.id)
                         }
-                        let thread = Thread.current
-                        print("Thread diff: \(threadBefore) - \(thread)")
                         self.cancellableEffects[effectSignal] = bag
                     }
                 }
