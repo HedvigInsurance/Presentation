@@ -57,12 +57,8 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         actionCallbacker.providedSignal
     }
     
-    open func effects(_ getState: @escaping () -> State, _ action: Action) -> FiniteSignal<Action>? {
+    open func effects(_ getState: @escaping () -> State, _ action: Action) async  {
         fatalError("Must be overrided by subclass")
-    }
-    
-    open func effects(_ getState: @escaping () -> State, _ action: Action) async throws  {
-        throw PresentableStoreError.notImplemented
     }
     
     open func reduce(_ state: State, _ action: Action) -> State {
@@ -71,32 +67,6 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     
     public func setState(_ state: State) {
         self.stateWriteSignal.value = state
-    }
-    
-    public var cancellableEffects: [EffectSignal<Action>: DisposeBag] = [:]
-    
-    public func cancelEffect(_ id: UUID) {
-        cancellableEffects.filter { key, _ in
-            key.id == id
-        }.forEach { cancellableEffect in
-            cancellableEffect.value.dispose()
-            
-            if let index = cancellableEffects.index(forKey: cancellableEffect.key) {
-                cancellableEffects.remove(at: index)
-            }
-        }
-    }
-    
-    public func cancelEffect(_ action: Action) {
-        cancellableEffects.filter { key, _ in
-            key.action == action
-        }.forEach { cancellableEffect in
-            cancellableEffect.value.dispose()
-            
-            if let index = cancellableEffects.index(forKey: cancellableEffect.key) {
-                cancellableEffects.remove(at: index)
-            }
-        }
     }
     
     /// Sends an action to the store, which is then reduced to produce a new state
@@ -118,28 +88,9 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
             logger("🦄 \(String(describing: Self.self)): new state \n \(newState)")
         }
         Task {[weak self] in guard let self = self else { return }
-            do {
-                try await effects({
-                    self.stateSignal.value
-                }, action)
-            } catch _ {
-                DispatchQueue.main.async {[weak self] in guard let self = self else { return }
-                    if let effectActionSignal: FiniteSignal<Action> = self.effects({
-                        self.stateSignal.value
-                    }, action) {
-                        let bag = DisposeBag()
-                        
-                        let effectSignal = EffectSignal(action, effectActionSignal)
-                        
-                        bag += effectActionSignal.atValue {[weak self] action in
-                            self?.send(action)
-                        }.onEnd { [weak self] in
-                            self?.cancelEffect(effectSignal.id)
-                        }
-                        self.cancellableEffects[effectSignal] = bag
-                    }
-                }
-            }
+            await effects({
+                self.stateSignal.value
+            }, action)
         }
     }
     
@@ -161,17 +112,13 @@ public protocol Store {
     var logger: (_ message: String) -> Void { get set }
     var stateSignal: CoreSignal<Read, State> { get }
     var actionSignal: CoreSignal<Plain, Action> { get }
-    var cancellableEffects: [EffectSignal<Action>: DisposeBag] { get }
     
     /// WARNING: Use this to set the state to the provided state BUT only for mocking purposes
     func setState(_ state: State)
     
     func reduce(_ state: State, _ action: Action) -> State
-    func effects(_ getState: @escaping () -> State, _ action: Action) -> FiniteSignal<Action>?
-    func effects(_ getState: @escaping () -> State, _ action: Action) async throws
+    func effects(_ getState: @escaping () -> State, _ action: Action) async
     func send(_ action: Action)
-    func cancelEffect(_ id: UUID)
-    func cancelEffect(_ action: Action)
     
     init()
 }
