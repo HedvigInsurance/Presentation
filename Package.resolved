@@ -14,9 +14,9 @@
         "package": "Runtime",
         "repositoryURL": "https://github.com/wickwirew/Runtime",
         "state": {
-          "branch": null,
-          "revision": "a848b81e1a0100801f572e5273ffe4352fd54088",
-          "version": "2.2.2"
+          "branch": "swift-5-10-fix",
+          "revision": "318f8a3ac7555ce4e81998beaf68e6062ee6c423",
+          "version": null
         }
       },
       {
