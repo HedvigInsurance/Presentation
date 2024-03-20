@@ -71,6 +71,12 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     
     /// Sends an action to the store, which is then reduced to produce a new state
     public func send(_ action: Action) {
+        Task {
+            await sendAsync(action)
+        }
+    }
+    
+    public func sendAsync(_ action: Action) async {
         logger("🦄 \(String(describing: Self.self)): sending \(action)")
         
         let previousState = stateSignal.value
@@ -87,11 +93,9 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
         if newState != previousState {
             logger("🦄 \(String(describing: Self.self)): new state \n \(newState)")
         }
-        Task {[weak self] in guard let self = self else { return }
-            await effects({
-                self.stateSignal.value
-            }, action)
-        }
+        await effects({
+            self.stateSignal.value
+        }, action)
     }
     
     public required init() {
@@ -119,7 +123,8 @@ public protocol Store {
     func reduce(_ state: State, _ action: Action) -> State
     func effects(_ getState: @escaping () -> State, _ action: Action) async
     func send(_ action: Action)
-    
+    func send(_ action: Action) async
+
     init()
 }
 
