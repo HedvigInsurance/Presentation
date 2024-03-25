@@ -71,8 +71,26 @@ open class StateStore<State: StateProtocol, Action: ActionProtocol>: Store {
     
     /// Sends an action to the store, which is then reduced to produce a new state
     public func send(_ action: Action) {
+        logger("🦄 \(String(describing: Self.self)): sending \(action)")
+        
+        let previousState = stateSignal.value
+        
+        stateWriteSignal.value = reduce(stateSignal.value, action)
+        actionCallbacker.callAll(with: action)
+        
+        DispatchQueue.global(qos: .background).async {
+            Self.persist(self.stateSignal.value)
+        }
+                
+        let newState = stateSignal.value
+        
+        if newState != previousState {
+            logger("🦄 \(String(describing: Self.self)): new state \n \(newState)")
+        }
         Task {
-            await sendAsync(action)
+            await effects({
+                self.stateSignal.value
+            }, action)
         }
     }
     
