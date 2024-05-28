@@ -20,7 +20,7 @@ let package = Package(
     dependencies: [
         .package(url: "https://github.com/hedviginsurance/Flow", .upToNextMajor(from: "1.8.7")),
         .package(url: "https://github.com/httpswift/Swifter", .exact("1.5.0")),
-        .package(url: "https://github.com/wickwirew/Runtime", .exact("2.2.2")),
+        .package(url: "https://github.com/wickwirew/Runtime", .exact("2.2.6")),
     ],
     targets: [
         .target(
